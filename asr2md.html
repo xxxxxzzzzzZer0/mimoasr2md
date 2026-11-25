@@ -2712,6 +2712,11 @@ pre#preview{
       it.removeAfter = true;
       if (it.abort) { it.abort.abort(); }
       toast('已中止并移除');
+    } else if (state.running && it.inRun && !finishedStatus(it.status)) {
+      /* 已排队未开始：链条仍持引用，只删列表会照常上传计费 */
+      it.canceled = true;
+      removeNow(it);
+      toast('已移除，不会上传');
     } else {
       removeNow(it);
     }
