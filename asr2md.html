@@ -1,0 +1,3796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>音频转文字 · MiMo-ASR</title>
+<style>
+:root{
+  --bg:#f5f6f8; --fg:#1b1f24; --muted:#5c6673; --line:#d7dde5; --card:#ffffff;
+  --acc:#1a6fdc; --acc-d:#0f55b3; --ok:#12854a; --warn:#a86400; --err:#c22a2a;
+  --chip:#eef2f7; --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.05);
+  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#14171b; --fg:#e8ecf1; --muted:#9aa6b4; --line:#2c333c; --card:#1b2027;
+    --acc:#5b9dff; --acc-d:#7fb2ff; --ok:#4cc38a; --warn:#e0a94a; --err:#ff7b72;
+    --chip:#242b34; --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--fg); line-height:1.55;
+  font:15px/1.55 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+  padding:20px 16px 40px;
+}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h1,h2{font-size:15px;margin:0}
+code,kbd,pre{font-family:var(--mono)}
+button{
+  font:inherit; cursor:pointer; border:1px solid var(--line); background:var(--card); color:var(--fg);
+  border-radius:8px; padding:6px 12px; transition:background .15s,border-color .15s,opacity .15s;
+}
+button:hover:not(:disabled){border-color:var(--acc)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+button.primary:hover:not(:disabled){background:var(--acc-d)}
+button.danger{color:var(--err);border-color:var(--err)}
+button.ghost{background:transparent}
+button.small{padding:2px 8px;font-size:12px}
+button.big{padding:9px 22px;font-size:16px;font-weight:600}
+input,select{
+  font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);
+  border-radius:8px;padding:6px 10px;min-width:0;
+}
+input[type=checkbox]{width:16px;height:16px;vertical-align:-3px;margin-right:4px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+label{color:var(--muted);font-size:13px}
+.top{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand strong{font-size:19px}
+.brand .sub{color:var(--muted);font-size:12px;letter-spacing:.02em}
+.notice{
+  background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+  font-size:13px;color:var(--muted)
+}
+.notice code{color:var(--fg);word-break:break-all}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}
+.panel h2{font-size:14px;margin-bottom:8px}
+.panel .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.grid label{display:flex;flex-direction:column;gap:4px}
+.grid input{width:100%}
+.checks{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+.hint{color:var(--muted);font-size:12px}
+.keyrow{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;box-shadow:var(--shadow)
+}
+.keyrow input[type=password],.keyrow input[type=text]{flex:1 1 240px}
+.mask{flex:1 1 240px;font-family:var(--mono);font-size:13px;padding:6px 10px;background:var(--chip);border:1px dashed var(--line);border-radius:8px;word-break:break-all}
+.dot{font-size:12px;color:var(--muted);white-space:nowrap}
+.dot.ok{color:var(--ok)}
+.dot.warn{color:var(--warn)}
+.drop{
+  border:2px dashed var(--line);border-radius:12px;background:var(--card);
+  padding:20px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;
+  color:var(--muted);font-size:14px
+}
+.drop.over{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--card))}
+.privacy{font-size:12px;color:var(--muted);margin-top:-4px;padding:0 4px}
+.tablewrap{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--chip);color:var(--muted);font-weight:600;font-size:12px;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.name{max-width:340px;overflow-wrap:anywhere}
+td.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+td.ops{white-space:nowrap}
+td.ops button{margin-right:4px}
+.empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+.st{font-size:12px;white-space:nowrap}
+.st.ok{color:var(--ok)} .st.warn{color:var(--warn)} .st.err{color:var(--err)}
+.st.run{color:var(--acc)}
+.bar{height:4px;background:var(--chip);border-radius:2px;overflow:hidden;margin-top:4px;min-width:80px}
+.bar>i{display:block;height:100%;background:var(--acc);width:0;transition:width .2s}
+.controls,.outrow,.actions{display:flex;gap:12px 18px;align-items:center;flex-wrap:wrap}
+.controls{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;box-shadow:var(--shadow)}
+.controls input[type=number]{width:64px}
+.outrow input{min-width:260px;flex:1 1 260px}
+.outrow{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;box-shadow:var(--shadow)}
+.actions{justify-content:flex-start}
+.panelhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+pre#preview{
+  margin:0;max-height:420px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;
+  background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px
+}
+.log{max-height:200px;overflow:auto;background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.log div{padding:1px 0;overflow-wrap:anywhere}
+.log .t{color:var(--fg);opacity:.55;margin-right:6px}
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9;
+  background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13px;box-shadow:var(--shadow);
+  max-width:90vw
+}
+[hidden]{display:none !important}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modalbox{background:var(--card);border:1px solid var(--line);border-radius:12px;max-width:900px;width:100%;max-height:82vh;overflow:auto;padding:14px;box-shadow:var(--shadow)}
+#jsonBody{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:62vh;overflow:auto;background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px}
+#mockRoot .mtable{max-height:420px;overflow:auto}
+.pass{color:var(--ok)} .fail{color:var(--err)} .skip{color:var(--warn)}
+@media (max-width:720px){
+  body{padding:12px 8px 32px}
+  th:nth-child(4),td:nth-child(4){display:none}
+  td.name{max-width:180px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><strong>音频转文字</strong><span class="sub">MiMo-V2.5-ASR</span></div>
+    <div>
+      <button id="btnSettings" class="ghost" aria-expanded="false" aria-controls="settingsPanel">设置</button>
+      <button id="btnHelp" class="ghost" aria-expanded="false" aria-controls="helpPanel">说明</button>
+    </div>
+  </header>
+
+  <div class="notice">ⓘ 音频将上传至 <code id="baseUrlText"></code>；API Key 仅存于本页内存，不写入磁盘。</div>
+
+  <section id="settingsPanel" class="panel" hidden>
+    <h2>设置（非敏感项可持久化）</h2>
+    <div class="grid">
+      <label>Base URL<input id="setBaseUrl" type="text" spellcheck="false" autocomplete="off"></label>
+      <label>模型<input id="setModel" type="text" spellcheck="false" autocomplete="off"></label>
+      <label>单价（元 / 小时）<input id="setPrice" type="number" min="0.01" step="0.01"></label>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="setShowMeta"> 导出含元信息块</label>
+      <label><input type="checkbox" id="setBom"> 导出加 UTF-8 BOM（兼容旧版记事本）</label>
+    </div>
+    <div class="row">
+      <button id="btnSaveSettings" class="primary">保存设置</button>
+      <button id="btnResetSettings" class="ghost">恢复默认</button>
+      <span id="settingsHint" class="hint"></span>
+    </div>
+  </section>
+
+  <section id="helpPanel" class="panel" hidden>
+    <h2>说明</h2>
+    <ul style="margin:0;padding-left:20px;font-size:13px;color:var(--muted)">
+      <li>音频会上传至上方 Base URL 指向的服务商；请只在受信设备上使用，并自行确认内容合规。</li>
+      <li>API Key 只保存在本页内存，刷新即失效；页面不会把它写进磁盘、日志、预览或导出的 Markdown。</li>
+      <li>支持 wav / mp3 直传；m4a / aac / ogg / flac / webm 自动转单声道后上传；amr / wma / 3gp 需先转为 mp3 或 wav（不会发起请求）。</li>
+      <li>长录音按静音点自动切片后逐段转写，结果按文件选择顺序合并为一个 Markdown。</li>
+      <li>页面完全离线可用（除调用 API 外无任何外部请求），可直接转发给同事；HTML 本身不含凭证。</li>
+      <li>长任务建议保持页面在前台，后台可能被浏览器节流；中途取消时已完成的结果仍可导出。</li>
+    </ul>
+  </section>
+
+  <section class="keyrow">
+    <label for="keyInput" style="min-width:56px">API Key</label>
+    <input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴 API Key（仅存于本页内存）">
+    <span id="keyMasked" class="mask" hidden></span>
+    <button id="btnKeySave" class="primary">配置</button>
+    <button id="btnKeyChange" class="ghost" hidden>更换</button>
+    <button id="btnKeyShow" class="ghost" hidden>显示 3 秒</button>
+    <span id="keyState" class="dot">○ 未配置</span>
+  </section>
+
+  <section id="dropZone" class="drop">
+    <div>拖入 wav / mp3 / m4a / aac / ogg / flac / webm 文件，或选择文件夹</div>
+    <div>
+      <button id="btnPickFiles" class="primary">选择文件</button>
+      <button id="btnPickDir" class="ghost">选择文件夹</button>
+    </div>
+    <input id="fileInput" type="file" multiple accept=".wav,.mp3,.m4a,.aac,.ogg,.flac,.webm,audio/*" hidden>
+    <input id="dirInput" type="file" webkitdirectory directory multiple hidden>
+  </section>
+  <div class="privacy">隐私提示：选择文件夹时，所选目录下的文件名对页面可见；页面只读取你选中的音频。</div>
+
+  <div class="tablewrap">
+    <table aria-label="文件列表">
+      <thead>
+        <tr><th>#</th><th>文件名</th><th>大小</th><th>时长</th><th>处理</th><th>状态</th><th>操作</th></tr>
+      </thead>
+      <tbody id="fileBody"></tbody>
+    </table>
+    <div id="emptyRow" class="empty">尚未添加文件</div>
+  </div>
+
+  <section class="controls">
+    <label>语种
+      <select id="optLang">
+        <option value="auto">自动</option>
+        <option value="zh">中文</option>
+        <option value="en">英文</option>
+      </select>
+    </label>
+    <label>并发 <input id="optConcurrency" type="number" min="2" max="5" step="1"></label>
+    <label><input type="checkbox" id="optStream"> 流式（实验）</label>
+    <label><input type="checkbox" id="optSilence"> 静音切片</label>
+    <label><input type="checkbox" id="optProtect"> 保护原文格式</label>
+  </section>
+
+  <section class="outrow">
+    <label for="outName" style="white-space:nowrap">输出文件名</label>
+    <input id="outName" type="text" placeholder="留空自动命名（支持中文与空格）" autocomplete="off">
+  </section>
+
+  <section class="actions">
+    <button id="btnStart" class="primary big" disabled>开始转写</button>
+    <button id="btnCancel" class="danger" disabled>取消</button>
+    <button id="btnPreview" class="ghost">预览</button>
+    <button id="btnSave" class="primary" disabled>保存 md</button>
+    <button id="btnCopy" class="ghost" disabled>复制</button>
+  </section>
+
+  <section id="previewPanel" class="panel" hidden>
+    <div class="panelhead"><h2>预览（保存内容以此为准）</h2><span id="previewInfo" class="hint"></span></div>
+    <pre id="preview" tabindex="0"></pre>
+  </section>
+
+  <section class="panel">
+    <div class="panelhead"><h2>日志（已脱敏）</h2><button id="btnClearLog" class="ghost small">清空</button></div>
+    <div id="log" class="log" role="log" aria-live="polite"></div>
+  </section>
+
+  <div id="mockRoot" hidden></div>
+</div>
+<div id="jsonModal" class="modal" hidden>
+  <div class="modalbox" role="dialog" aria-modal="true" aria-labelledby="jsonTitle">
+    <div class="panelhead"><h2 id="jsonTitle">原始响应 JSON</h2><button id="btnJsonClose" class="ghost">关闭</button></div>
+    <pre id="jsonBody"></pre>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+<noscript><p style="max-width:1080px;margin:20px auto">本工具需要启用 JavaScript。</p></noscript>
+
+<script>
+/* 配置与常量：全文件唯一来源；数值口径见 方案.md §4，禁止在别处复制字面量。 */
+(function (ns) {
+  'use strict';
+
+  var CONFIG = Object.freeze({
+    MODEL: 'mimo-v2.5-asr',
+    BASE_URL: 'https://token-plan-cn.xiaomimimo.com/v1',
+    // v2.5 官方域名迁移：旧默认值对有效 key 也返回 401，读到即视为「未自定义」
+    LEGACY_BASE_URLS: Object.freeze(['https://api.xiaomimimo.com/v1']),
+    ENDPOINT: '/chat/completions',
+
+    SAMPLE_RATE: 16000,
+    CHANNELS: 1,
+    BITS: 16,
+    BYTES_PER_SEC: 32000,
+    B64_PER_SEC: 42667,
+
+    LIMIT_B64: 10000000,
+    MAX_RAW: 7500000,
+    SAFE_B64: 9500000,
+
+    MAX_DURATION_SEC: 10800,
+    MAX_FILE_SIZE: 500000000,
+    MEM_WARN_SEC: 3600,
+
+    CONNECT_TIMEOUT_MS: 30000,
+    SEGMENT_TOTAL_MS: 600000,
+    STREAM_IDLE_MS: 120000,
+
+    TARGET_SEC: 180,
+    WINDOW_MIN: 172,
+    WINDOW_MAX: 188,
+    HARD_MAX: 210,
+
+    FRAME_SAMPLES: 400,
+    HOP_SAMPLES: 160,
+    FRAME_MS: 25,
+    HOP_MS: 10,
+    DB_MIN: -100,
+    P10_RATIO: 0.1,
+    THR_OFFSET_DB: 8,
+    THR_MIN_DB: -60,
+    THR_MAX_DB: -25,
+    SMOOTH_FRAMES: 9,
+    VALLEY_MS: 200,
+    DIST_WEIGHT: 1.0,
+    ALIGN_MS: 5,
+    FADE_MS: 5,
+    DEGRADE_OVERLAP_SEC: 0.3,
+
+    HIGHPASS_HZ: 60,
+    PEAK_HIGH: 0.99,
+    PEAK_HIGH_TO: 0.89,
+    PEAK_LOW: 0.1,
+    PEAK_LOW_TO: 0.7,
+    INT16_MAX: 32767,
+    WAV_HEADER_BYTES: 44,
+
+    CONCURRENCY_DEFAULT: 3,
+    CONCURRENCY_MIN: 2,
+    CONCURRENCY_MAX: 5,
+    RETRY_MAX: 3,
+    BACKOFF_MS: Object.freeze([1000, 2000, 4000]),
+    BACKOFF_JITTER: 0.3,
+
+    DECODABLE_EXT: Object.freeze(['wav', 'mp3', 'm4a', 'aac', 'ogg', 'flac', 'webm']),
+    AUDIO_EXT: Object.freeze([
+      'wav', 'mp3', 'm4a', 'aac', 'ogg', 'flac', 'webm',
+      'amr', 'wma', '3gp', '3gpp', 'mp4', 'mov', 'm4b', 'opus', 'aiff', 'aif', 'caf', 'au'
+    ]),
+    MIME_BY_EXT: Object.freeze({ wav: 'audio/wav', mp3: 'audio/mpeg' }),
+
+    LANG_DEFAULT: 'auto',
+    PRICE_PER_HOUR: 0.5,
+    LS_KEY: 'asr2md.settings.v1'
+  });
+
+  var DEFAULTS = Object.freeze({
+    baseUrl: CONFIG.BASE_URL,
+    model: CONFIG.MODEL,
+    lang: CONFIG.LANG_DEFAULT,
+    concurrency: CONFIG.CONCURRENCY_DEFAULT,
+    stream: false,
+    silenceSlice: true,
+    protectOriginal: true,
+    showMeta: true,
+    bom: false,
+    pricePerHour: CONFIG.PRICE_PER_HOUR
+  });
+
+  var Util = {
+    /* 错误对象唯一形状（方案 §7.2），任何模块不得自造字段。 */
+    err: function (spec) {
+      spec = spec || {};
+      return {
+        kind: spec.kind || 'unknown',
+        httpStatus: typeof spec.httpStatus === 'number' ? spec.httpStatus : null,
+        code: spec.code === undefined ? null : spec.code,
+        message: spec.message || '',
+        retriable: spec.retriable === true,
+        stage: spec.stage || 'queue'
+      };
+    },
+    now: function () { return Date.now(); },
+    clamp: function (v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); },
+    sleep: function (ms) {
+      return new Promise(function (r) { setTimeout(r, ms); });
+    },
+    escapeHtml: function (s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    },
+    uid: (function () {
+      var n = 0;
+      return function (p) { n += 1; return (p || 'id') + '_' + n.toString(36) + '_' + Date.now().toString(36); };
+    })(),
+    extOf: function (name) {
+      var m = /\.([A-Za-z0-9]+)$/.exec(String(name || ''));
+      return m ? m[1].toLowerCase() : '';
+    }
+  };
+
+  /* 非敏感设置持久化：只允许 DEFAULTS 里出现过的键；失败退回内存态。 */
+  function pickSettings(src) {
+    var out = {};
+    Object.keys(DEFAULTS).forEach(function (k) {
+      if (!src || !Object.prototype.hasOwnProperty.call(src, k)) { return; }
+      var v = src[k];
+      if (typeof DEFAULTS[k] === 'boolean') { out[k] = !!v; return; }
+      if (typeof DEFAULTS[k] === 'number') {
+        var n = Number(v);
+        out[k] = isFinite(n) ? n : DEFAULTS[k];
+        return;
+      }
+      out[k] = String(v == null ? '' : v).trim() || DEFAULTS[k];
+    });
+    if (out.concurrency != null) {
+      out.concurrency = Util.clamp(Math.round(out.concurrency), CONFIG.CONCURRENCY_MIN, CONFIG.CONCURRENCY_MAX);
+    }
+    if (out.pricePerHour != null && !(out.pricePerHour > 0 && out.pricePerHour < 1000)) {
+      out.pricePerHour = DEFAULTS.pricePerHour;
+    }
+    if (out.baseUrl != null) {
+      /* host 大小写不敏感，旧值的大小写变体也要迁移 */
+      var normBase = out.baseUrl.replace(/\/+$/, '').toLowerCase();
+      if (CONFIG.LEGACY_BASE_URLS.indexOf(normBase) >= 0 || !/^https?:\/\/[^\s]+$/i.test(out.baseUrl)) {
+        out.baseUrl = DEFAULTS.baseUrl;
+      }
+    }
+    if (out.lang != null && ['auto', 'zh', 'en'].indexOf(out.lang) < 0) {
+      out.lang = DEFAULTS.lang;
+    }
+    return out;
+  }
+
+  var Config = {
+    DEFAULTS: DEFAULTS,
+    pick: pickSettings,
+    loadSettings: function () {
+      var out = {};
+      Object.keys(DEFAULTS).forEach(function (k) { out[k] = DEFAULTS[k]; });
+      var raw = null;
+      try { raw = window.localStorage.getItem(CONFIG.LS_KEY); } catch (e) { raw = null; }
+      if (!raw) { return { settings: out, persisted: false }; }
+      try {
+        var parsed = JSON.parse(raw);
+        var safe = pickSettings(parsed);
+        Object.keys(safe).forEach(function (k) { out[k] = safe[k]; });
+        return { settings: out, persisted: true };
+      } catch (e) {
+        return { settings: out, persisted: false };
+      }
+    },
+    saveSettings: function (settings) {
+      var safe = pickSettings(settings);
+      try {
+        window.localStorage.setItem(CONFIG.LS_KEY, JSON.stringify(safe));
+        return { ok: true, persisted: true };
+      } catch (e) {
+        return { ok: false, persisted: false };
+      }
+    },
+    resetSettings: function () {
+      try { window.localStorage.removeItem(CONFIG.LS_KEY); } catch (e) { /* 忽略：file:// 下 localStorage 行为未定义 */ }
+      var out = {};
+      Object.keys(DEFAULTS).forEach(function (k) { out[k] = DEFAULTS[k]; });
+      return out;
+    }
+  };
+
+  ns.CONFIG = CONFIG;
+  ns.Util = Util;
+  ns.Config = Config;
+})(window.ASR2MD = window.ASR2MD || {});
+/* 音频引擎（契约 build/contracts.md §1）：解码 / 降采样 / 切片 / 淡变 / WAV / 分块 Base64。
+   加载期只读命名空间、不触碰任何浏览器 API，保证 Node 下可直接 require 做纯函数自测。 */
+(function (ns) {
+  'use strict';
+
+  var CONFIG = ns.CONFIG;
+  var Util = ns.Util;
+  var SR = CONFIG.SAMPLE_RATE;
+
+  /* 真实录音的 WAV 常在 fmt 与 data 之间夹 LIST/bext 等块，44 B 读不全；
+     但也不能为了拿时长把几百 MB 整段读入内存，故只扫头部固定字节。 */
+  var WAV_HEAD_SCAN_BYTES = 65536;
+  /* btoa 单次入参过大会抛 RangeError。取 3 的倍数，保证除末块外分块内部不产生 padding。 */
+  var B64_CHUNK_BYTES = 3 * 4096;
+  var FROM_CHAR_CHUNK = 4096;
+
+  function normExt(ext) {
+    return String(ext == null ? '' : ext).replace(/^\./, '').toLowerCase();
+  }
+
+  function isDecodableExt(ext) {
+    return CONFIG.DECODABLE_EXT.indexOf(normExt(ext)) >= 0;
+  }
+
+  function isAudioExt(ext) {
+    return CONFIG.AUDIO_EXT.indexOf(normExt(ext)) >= 0;
+  }
+
+  function isRangeError(e) {
+    return !!e && (e.name === 'RangeError' || e instanceof RangeError);
+  }
+
+  /* 浏览器只抛 DOMException 名字，这里统一映射成契约错误形状（方案 §9 失败矩阵）。 */
+  function asAppError(e, stage) {
+    if (e && typeof e.kind === 'string' && typeof e.stage === 'string' && typeof e.message === 'string') {
+      return e;
+    }
+    var name = e && e.name ? String(e.name) : '';
+    if (isRangeError(e) || name === 'OutOfMemoryError') {
+      return Util.err({ kind: 'memory', stage: stage, message: '文件过大，内存不足，建议先切分后再试' });
+    }
+    if (name === 'AbortError') {
+      return Util.err({ kind: 'abort', stage: stage, message: '音频处理已取消' });
+    }
+    if (name === 'EncodingError' || name === 'NotSupportedError' || name === 'InvalidStateError') {
+      return Util.err({ kind: 'decode', stage: stage, message: '浏览器无法解码该音频编码，请先转为 MP3/WAV' });
+    }
+    return Util.err({ kind: 'decode', stage: stage, message: '音频解码失败（' + (name || '未知错误') + '）' });
+  }
+
+  /* ---------------- WAV 头 ---------------- */
+
+  function toDataView(buf) {
+    if (!buf) { return null; }
+    if (typeof ArrayBuffer !== 'undefined' && buf instanceof ArrayBuffer) { return new DataView(buf); }
+    if (typeof buf.byteLength === 'number' && buf.buffer) {
+      return new DataView(buf.buffer, buf.byteOffset || 0, buf.byteLength);
+    }
+    return null;
+  }
+
+  function fourcc(view, off) {
+    if (off < 0 || off + 4 > view.byteLength) { return ''; }
+    return String.fromCharCode(view.getUint8(off), view.getUint8(off + 1),
+      view.getUint8(off + 2), view.getUint8(off + 3));
+  }
+
+  /* 只走 RIFF 块表，不碰 PCM 数据；返回的 dataOffset/dataSize 供 analyze 校验头可信度。 */
+  function parseWavHead(buf) {
+    var view = toDataView(buf);
+    if (!view || view.byteLength < 12) { return null; }
+    if (fourcc(view, 0) !== 'RIFF' || fourcc(view, 8) !== 'WAVE') { return null; }
+
+    var fmt = null;
+    var dataOffset = -1;
+    var dataSize = -1;
+    var offset = 12;
+
+    while (offset + 8 <= view.byteLength) {
+      var id = fourcc(view, offset);
+      var size = view.getUint32(offset + 4, true);
+      var body = offset + 8;
+      if (id === 'fmt ' && body + 16 <= view.byteLength) {
+        fmt = {
+          audioFormat: view.getUint16(body, true),
+          channels: view.getUint16(body + 2, true),
+          sampleRate: view.getUint32(body + 4, true),
+          byteRate: view.getUint32(body + 8, true),
+          blockAlign: view.getUint16(body + 12, true),
+          bitsPerSample: view.getUint16(body + 14, true)
+        };
+      } else if (id === 'data') {
+        dataOffset = body;
+        dataSize = size === 0xFFFFFFFF ? -1 : size; /* 流式录音会写未知长度哨兵 */
+        break;
+      }
+      var next = body + size + (size % 2); /* RIFF 块按偶数边界对齐 */
+      if (size > view.byteLength || next <= offset) { break; }
+      offset = next;
+    }
+
+    if (!fmt) { return null; }
+    if (!(fmt.sampleRate > 0) || !(fmt.channels > 0) || fmt.channels > 64) { return null; }
+    if (dataOffset < 0 || dataSize <= 0) { return null; }
+
+    var frameBytes = fmt.blockAlign > 0
+      ? fmt.blockAlign
+      : fmt.channels * Math.max(1, Math.floor(fmt.bitsPerSample / 8));
+    var rate = fmt.byteRate > 0 ? fmt.byteRate : fmt.sampleRate * frameBytes;
+    if (!(rate > 0)) { return null; }
+
+    return {
+      duration: dataSize / rate,
+      sampleRate: fmt.sampleRate,
+      channels: fmt.channels,
+      dataOffset: dataOffset,
+      dataSize: dataSize,
+      byteRate: rate
+    };
+  }
+
+  function wavDuration(arrayBuffer) {
+    var info = parseWavHead(arrayBuffer);
+    if (!info) { return null; }
+    return { duration: info.duration, sampleRate: info.sampleRate, channels: info.channels };
+  }
+
+  /* ---------------- 浏览器解码 ---------------- */
+
+  function makeOfflineCtx(channels, frames, stage) {
+    var Ctor = null;
+    if (typeof OfflineAudioContext !== 'undefined') { Ctor = OfflineAudioContext; }
+    else if (typeof webkitOfflineAudioContext !== 'undefined') { Ctor = webkitOfflineAudioContext; }
+    if (!Ctor) {
+      throw Util.err({
+        kind: 'decode',
+        stage: stage,
+        message: '当前环境不支持音频解码，请改用 Edge / Chrome 打开'
+      });
+    }
+    try {
+      return new Ctor(channels, frames, SR);
+    } catch (e) {
+      if (isRangeError(e)) {
+        throw Util.err({ kind: 'memory', stage: stage, message: '文件过大，内存不足，建议先切分后再试' });
+      }
+      throw e;
+    }
+  }
+
+  /* 同时挂回调与 promise：新浏览器只返回 promise，旧实现只走回调。 */
+  function decodeBuffer(ctx, arrayBuffer) {
+    return new Promise(function (resolve, reject) {
+      var ret;
+      try {
+        ret = ctx.decodeAudioData(arrayBuffer, resolve, function (e) {
+          reject(e || Util.err({ kind: 'decode', stage: 'decode', message: '浏览器无法解码该音频编码，请先转为 MP3/WAV' }));
+        });
+      } catch (e) {
+        reject(e);
+        return;
+      }
+      if (ret && typeof ret.then === 'function') { ret.then(resolve, reject); }
+    });
+  }
+
+  function readHead(file) {
+    if (file && typeof file.slice === 'function') {
+      var size = typeof file.size === 'number' ? file.size : WAV_HEAD_SCAN_BYTES;
+      return Promise.resolve(file.slice(0, Math.min(WAV_HEAD_SCAN_BYTES, size)).arrayBuffer());
+    }
+    return Promise.resolve(file.arrayBuffer());
+  }
+
+  function decodeMeta(file) {
+    return Promise.resolve()
+      .then(function () { return file.arrayBuffer(); })
+      .then(function (ab) {
+        var ctx = makeOfflineCtx(1, 1, 'analyze');
+        return decodeBuffer(ctx, ab);
+      })
+      .then(function (buffer) {
+        /* 只取时长与声道数，AudioBuffer 立即失去引用，不做整段 PCM 驻留 */
+        return {
+          duration: buffer.duration,
+          sampleRate: buffer.sampleRate || SR,
+          channels: buffer.numberOfChannels || null
+        };
+      });
+  }
+
+  function memWarning(duration) {
+    var mb = Math.ceil(duration * SR * 4 / 1000000);
+    return '音频较长（约 ' + Math.round(duration / 60) + ' 分钟），预计内存约 ' + mb +
+      ' MB，处理期间请保持页面在前台';
+  }
+
+  /* ---------------- analyze ---------------- */
+
+  function analyze(file) {
+    return Promise.resolve()
+      .then(function () {
+        var ext = Util.extOf(file && file.name);
+        var sizeBytes = file && typeof file.size === 'number' ? file.size : 0;
+        var base = {
+          decodable: isDecodableExt(ext),
+          ext: ext,
+          sizeBytes: sizeBytes,
+          b64Estimate: 4 * Math.ceil(sizeBytes / 3),
+          duration: null,
+          sampleRate: null,
+          channels: null,
+          warning: null
+        };
+        /* 不可解码：resolve 而不是 reject——UI 要展示成因，且绝不发请求 */
+        if (!base.decodable) { return base; }
+        if (sizeBytes > CONFIG.MAX_FILE_SIZE) {
+          throw Util.err({ kind: 'limit', stage: 'analyze', message: '文件超过体积上限，请先切分' });
+        }
+        return withDuration(file, ext, base);
+      })
+      .catch(function (e) { throw asAppError(e, 'analyze'); });
+  }
+
+  function withDuration(file, ext, base) {
+    var p;
+    if (ext === 'wav') {
+      /* wav 先读头；头不可信（声明长度超出实际文件）再退回解码 */
+      p = Promise.resolve()
+        .then(function () { return readHead(file); })
+        .then(function (buf) {
+          var head = parseWavHead(buf);
+          if (head && head.dataOffset + head.dataSize <= base.sizeBytes) {
+            return { duration: head.duration, sampleRate: head.sampleRate, channels: head.channels };
+          }
+          return null;
+        })
+        .catch(function () { return null; })
+        .then(function (meta) { return meta || decodeMeta(file); });
+    } else {
+      p = decodeMeta(file);
+    }
+
+    return p.then(function (meta) {
+      var duration = meta && meta.duration > 0 ? meta.duration : 0;
+      if (duration > CONFIG.MAX_DURATION_SEC) {
+        throw Util.err({ kind: 'limit', stage: 'analyze', message: '音频时长超过上限，请先切分' });
+      }
+      return {
+        decodable: true,
+        ext: base.ext,
+        sizeBytes: base.sizeBytes,
+        b64Estimate: base.b64Estimate,
+        duration: duration > 0 ? duration : null,
+        sampleRate: meta.sampleRate || null,
+        channels: meta.channels || null,
+        warning: duration > CONFIG.MEM_WARN_SEC ? memWarning(duration) : null
+      };
+    });
+  }
+
+  /* ---------------- decodeToMono16k ---------------- */
+
+  /* RBJ biquad，二阶高通去直流；直接改写在 16k 单声道 Float32 上。 */
+  function highpassInPlace(pcm) {
+    if (!pcm.length) { return; }
+    var q = Math.SQRT1_2;
+    var w0 = 2 * Math.PI * CONFIG.HIGHPASS_HZ / SR;
+    var cosw = Math.cos(w0);
+    var alpha = Math.sin(w0) / (2 * q);
+    var a0 = 1 + alpha;
+    var b0 = (1 + cosw) / 2 / a0;
+    var b1 = -(1 + cosw) / a0;
+    var b2 = (1 + cosw) / 2 / a0;
+    var a1 = -2 * cosw / a0;
+    var a2 = (1 - alpha) / a0;
+
+    var x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    for (var i = 0; i < pcm.length; i++) {
+      var x = pcm[i];
+      var y = b0 * x + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+      x2 = x1; x1 = x;
+      y2 = y1; y1 = y;
+      pcm[i] = y;
+    }
+  }
+
+  function protectPeak(pcm) {
+    var peak = 0;
+    for (var i = 0; i < pcm.length; i++) {
+      var v = pcm[i] < 0 ? -pcm[i] : pcm[i];
+      if (v > peak) { peak = v; }
+    }
+    if (!(peak > 0) || !isFinite(peak)) { return; }
+    var scale = 0;
+    if (peak > CONFIG.PEAK_HIGH) { scale = CONFIG.PEAK_HIGH_TO / peak; }
+    else if (peak < CONFIG.PEAK_LOW) { scale = CONFIG.PEAK_LOW_TO / peak; }
+    if (!(scale > 0) || scale === 1) { return; }
+    for (var j = 0; j < pcm.length; j++) { pcm[j] *= scale; }
+  }
+
+  function decodeToMono16k(file) {
+    return Promise.resolve()
+      .then(function () { return file.arrayBuffer(); })
+      .then(function (ab) {
+        /* 两段式：先按 1 帧上下文解码（顺带得到重采样后的 duration／声道），再整段渲染 */
+        var ctx = makeOfflineCtx(1, 1, 'decode');
+        return decodeBuffer(ctx, ab);
+      })
+      .then(function (buffer) {
+        var frames = buffer.length;
+        if (!(frames > 0)) {
+          throw Util.err({ kind: 'decode', stage: 'decode', message: '音频内容为空，无法解码' });
+        }
+        var ctx2 = makeOfflineCtx(1, frames, 'decode');
+        var src = ctx2.createBufferSource();
+        src.buffer = buffer;
+        src.connect(ctx2.destination);
+        if (typeof src.start === 'function') { src.start(0); } else { src.noteOn(0); }
+        return ctx2.startRendering();
+      })
+      .then(function (rendered) {
+        var pcm = rendered.getChannelData(0);
+        highpassInPlace(pcm);
+        protectPeak(pcm);
+        return { pcm: pcm, duration: pcm.length / SR };
+      })
+      .catch(function (e) { throw asAppError(e, 'decode'); });
+  }
+
+  /* ---------------- slice ---------------- */
+
+  function sumToDb(sum, len) {
+    var rms = Math.sqrt(sum / len);
+    if (!(rms > 0)) { return CONFIG.DB_MIN; }
+    var db = 20 * Math.log10(rms);
+    return db < CONFIG.DB_MIN ? CONFIG.DB_MIN : db;
+  }
+
+  /* 帧 RMS→dBFS。帧间高度重叠，但增量更新要按 hop 整块搬移，省下的运算抵不上出错风险；
+     直接整帧求和只有 帧长/hop 次乘加/采样，16k 下可以接受。 */
+  function frameDb(pcm, totalSamples) {
+    var frameLen = CONFIG.FRAME_SAMPLES;
+    var hop = CONFIG.HOP_SAMPLES;
+    var count = totalSamples >= frameLen
+      ? Math.floor((totalSamples - frameLen) / hop) + 1
+      : (totalSamples > 0 ? 1 : 0);
+    var out = new Float32Array(count);
+    if (!count) { return out; }
+
+    var len = totalSamples >= frameLen ? frameLen : totalSamples;
+    for (var f = 0; f < count; f++) {
+      var base = f * hop;
+      var sum = 0;
+      for (var i = 0; i < len; i++) {
+        var v = pcm[base + i];
+        sum += v * v;
+      }
+      out[f] = sumToDb(sum, len);
+    }
+    return out;
+  }
+
+  function percentile(db, p) {
+    if (!db.length) { return CONFIG.DB_MIN; }
+    var arr = Array.prototype.slice.call(db);
+    arr.sort(function (a, b) { return a - b; });
+    var idx = Math.floor(p * (arr.length - 1));
+    return arr[idx];
+  }
+
+  /* 9 帧滑动中位数：窗口只有几个元素，插入排序比 Array.sort 少建对象。 */
+  function smoothMedian(db, win) {
+    var n = db.length;
+    var out = new Float32Array(n);
+    if (!n) { return out; }
+    var half = Math.floor(win / 2);
+    var buf = new Float64Array(Math.min(win, n));
+    for (var i = 0; i < n; i++) {
+      var lo = Math.max(0, i - half);
+      var hi = Math.min(n - 1, i + half);
+      var k = 0;
+      for (var j = lo; j <= hi; j++) {
+        var v = db[j];
+        var p = k - 1;
+        while (p >= 0 && buf[p] > v) { buf[p + 1] = buf[p]; p--; }
+        buf[p + 1] = v;
+        k++;
+      }
+      out[i] = buf[(k - 1) >> 1];
+    }
+    return out;
+  }
+
+  /* 合格谷 = 连续时长 ≥ VALLEY_MS 的低于 thr 区段；整段扫一次，命中处全标。 */
+  function markValleys(smooth, thr) {
+    var n = smooth.length;
+    var marks = new Uint8Array(n);
+    var i = 0;
+    while (i < n) {
+      if (!(smooth[i] < thr)) { i++; continue; }
+      var j = i;
+      while (j + 1 < n && smooth[j + 1] < thr) { j++; }
+      var runMs = (j - i) * CONFIG.HOP_MS + CONFIG.FRAME_MS;
+      if (runMs >= CONFIG.VALLEY_MS) {
+        for (var k = i; k <= j; k++) { marks[k] = 1; }
+      }
+      i = j + 1;
+    }
+    return marks;
+  }
+
+  function buildStats(pcm, totalSamples) {
+    /* 方案 §4：thr 由全段 P10 统计一次，切点检测沿用同一阈值 */
+    var P10 = CONFIG.P10_RATIO;
+    var db = frameDb(pcm, totalSamples);
+    var thr = Util.clamp(percentile(db, P10) + CONFIG.THR_OFFSET_DB, CONFIG.THR_MIN_DB, CONFIG.THR_MAX_DB);
+    var smooth = smoothMedian(db, CONFIG.SMOOTH_FRAMES);
+    return { thr: thr, smooth: smooth, marks: markValleys(smooth, thr) };
+  }
+
+  /* 在 [cur+windowMin, cur+windowMax] 内按 cost 选点；优先合格谷，无谷则降级取最安静点。 */
+  function pickCut(smooth, marks, curSample, opt) {
+    var n = smooth.length;
+    if (!n) { return null; }
+    var curSec = curSample / SR;
+    var loSec = curSec + opt.windowMin;
+    var hiSec = curSec + opt.windowMax;
+    if (hiSec <= loSec) { return null; }
+    var t0 = curSec + opt.targetSec;
+
+    var iLo = Math.ceil((loSec * SR - CONFIG.FRAME_SAMPLES / 2) / CONFIG.HOP_SAMPLES);
+    var iHi = Math.floor((hiSec * SR - CONFIG.FRAME_SAMPLES / 2) / CONFIG.HOP_SAMPLES);
+    iLo = Util.clamp(iLo, 0, n - 1);
+    iHi = Util.clamp(iHi, iLo, n - 1);
+
+    var bestAll = null;
+    var bestValley = null;
+    for (var i = iLo; i <= iHi; i++) {
+      var t = (i * CONFIG.HOP_SAMPLES + CONFIG.FRAME_SAMPLES / 2) / SR;
+      if (t < loSec || t > hiSec) { continue; }
+      var cost = smooth[i] + CONFIG.DIST_WEIGHT * Math.abs(t - t0);
+      if (!bestAll || cost < bestAll.cost) { bestAll = { t: t, cost: cost }; }
+      if (marks[i] && (!bestValley || cost < bestValley.cost)) { bestValley = { t: t, cost: cost }; }
+    }
+    if (!bestAll) { return null; }
+
+    var pick = bestValley || bestAll;
+    return { sample: Math.round(pick.t * SR), degraded: !bestValley };
+  }
+
+  /* ±ALIGN_MS 内找 |x| 最小的过零点；对齐后越出窗口就退回原切点（契约 §1.3）。 */
+  function alignZeroCrossing(pcm, totalSamples, curSample, cutSample, opt) {
+    var delta = Math.round(CONFIG.ALIGN_MS / 1000 * SR);
+    if (delta <= 0) { return cutSample; }
+    var lo = Math.max(1, cutSample - delta);
+    var hi = Math.min(totalSamples - 1, cutSample + delta);
+    if (hi <= lo) { return cutSample; }
+
+    var bestS = -1;
+    var bestMag = Infinity;
+    for (var s = lo; s <= hi; s++) {
+      var a = pcm[s - 1];
+      var b = pcm[s];
+      if ((a <= 0 && b >= 0) || (a >= 0 && b <= 0)) {
+        var mag = Math.abs(a) > Math.abs(b) ? Math.abs(a) : Math.abs(b);
+        if (mag < bestMag) { bestMag = mag; bestS = s; }
+      }
+    }
+    if (bestS < 0) { return cutSample; }
+    var t = (bestS - curSample) / SR;
+    if (t < opt.windowMin || t > opt.windowMax) { return cutSample; }
+    return bestS;
+  }
+
+  function makeSeg(index, startSample, endSample, degraded) {
+    return {
+      index: index,
+      start: startSample / SR,
+      end: endSample / SR,
+      startSample: startSample,
+      endSample: endSample,
+      degraded: !!degraded
+    };
+  }
+
+  function runSlice(pcm, duration, opts) {
+    opts = opts || {};
+    var totalSamples = pcm && typeof pcm.length === 'number' ? pcm.length : 0;
+    if (duration > 0) {
+      var byDur = Math.round(duration * SR);
+      if (byDur < totalSamples) { totalSamples = byDur; }
+    }
+
+    /* 缩放档只供离线自测（目标段长变短）；生产路径 Queue 不传这些键 */
+    var opt = {
+      silence: opts.silence !== false,
+      targetSec: typeof opts.targetSec === 'number' && opts.targetSec > 0 ? opts.targetSec : CONFIG.TARGET_SEC,
+      windowMin: typeof opts.windowMin === 'number' ? opts.windowMin : CONFIG.WINDOW_MIN,
+      windowMax: typeof opts.windowMax === 'number' ? opts.windowMax : CONFIG.WINDOW_MAX,
+      hardMax: typeof opts.hardMax === 'number' && opts.hardMax > 0 ? opts.hardMax : CONFIG.HARD_MAX
+    };
+    if (opt.windowMin > opt.windowMax) {
+      var swap = opt.windowMin; opt.windowMin = opt.windowMax; opt.windowMax = swap;
+    }
+    var hardSamples = Math.round(opt.hardMax * SR);
+    var targetSamples = Math.round(opt.targetSec * SR);
+    if (targetSamples < 1) { targetSamples = 1; }
+
+    var segments = [];
+    if (!totalSamples) { return { segments: segments, degraded: false, overlapSec: 0 }; }
+
+    /* 整段就装得下时不做静音分析：短文件（直传档）不该付全段扫描的开销 */
+    var stats = opt.silence && totalSamples > hardSamples ? buildStats(pcm, totalSamples) : null;
+    var curSample = 0;
+    var degradedAny = false;
+    var overlapSec = 0;
+    var index = 0;
+
+    while (true) {
+      var remaining = totalSamples - curSample;
+      /* 收尾规则（方案 §4）：剩余 ≤ HARD_MAX 整段取完 */
+      if (remaining <= hardSamples) {
+        if (remaining > 0) {
+          index++;
+          segments.push(makeSeg(index, curSample, totalSamples, false));
+        }
+        break;
+      }
+
+      var degraded = false;
+      var cutSample = -1;
+      if (stats) {
+        var picked = pickCut(stats.smooth, stats.marks, curSample, opt);
+        if (picked) {
+          cutSample = alignZeroCrossing(pcm, totalSamples, curSample, picked.sample, opt);
+          degraded = picked.degraded;
+        }
+      }
+      if (cutSample <= curSample) { cutSample = curSample + targetSamples; }
+      /* 断言：任一段必须 < HARD_MAX；越界按 target 再切 */
+      if (cutSample - curSample >= hardSamples) { cutSample = curSample + targetSamples; }
+      if (cutSample - curSample >= hardSamples) { cutSample = curSample + Math.max(1, hardSamples >> 1); }
+      if (cutSample > totalSamples) { cutSample = totalSamples; }
+      if (cutSample - curSample <= 0) { break; }
+
+      index++;
+      segments.push(makeSeg(index, curSample, cutSample, degraded));
+
+      if (degraded) {
+        degradedAny = true;
+        overlapSec += CONFIG.DEGRADE_OVERLAP_SEC;
+        var back = Math.round(CONFIG.DEGRADE_OVERLAP_SEC * SR);
+        /* 下一段起点前移形成重叠；若前移会不前进则放弃重叠，避免死循环 */
+        curSample = cutSample - back > curSample ? cutSample - back : cutSample;
+      } else {
+        curSample = cutSample;
+      }
+    }
+
+    return { segments: segments, degraded: degradedAny, overlapSec: overlapSec };
+  }
+
+  function slice(pcm, duration, opts) {
+    return Promise.resolve()
+      .then(function () { return runSlice(pcm, duration, opts); })
+      .catch(function (e) {
+        if (e && typeof e.kind === 'string') { throw e; }
+        if (isRangeError(e)) {
+          throw Util.err({ kind: 'memory', stage: 'slice', message: '文件过大，内存不足，建议先切分后再试' });
+        }
+        throw Util.err({ kind: 'unknown', stage: 'slice', message: '切片失败（' + (e && e.name ? e.name : '未知错误') + '）' });
+      });
+  }
+
+  /* ---------------- WAV 编码 / Base64 ---------------- */
+
+  function writeFourcc(u8, offset, text) {
+    for (var i = 0; i < 4; i++) { u8[offset + i] = text.charCodeAt(i) & 0xFF; }
+  }
+
+  function wavFromFloat32(samples) {
+    var channels = CONFIG.CHANNELS;
+    var bits = CONFIG.BITS;
+    var blockAlign = channels * (bits / 8);
+    var byteRate = SR * blockAlign;
+    var n = samples.length;
+    var dataBytes = n * 2;
+    var buf = new ArrayBuffer(CONFIG.WAV_HEADER_BYTES + dataBytes);
+    var view = new DataView(buf);
+    var u8 = new Uint8Array(buf);
+
+    writeFourcc(u8, 0, 'RIFF');
+    view.setUint32(4, 36 + dataBytes, true);
+    writeFourcc(u8, 8, 'WAVE');
+    writeFourcc(u8, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);              /* PCM */
+    view.setUint16(22, channels, true);
+    view.setUint32(24, SR, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bits, true);
+    writeFourcc(u8, 36, 'data');
+    view.setUint32(40, dataBytes, true);
+
+    var maxI = CONFIG.INT16_MAX;
+    var minI = -maxI - 1;
+    var pcm16 = new Int16Array(buf, CONFIG.WAV_HEADER_BYTES, n);
+    for (var i = 0; i < n; i++) {
+      var v = Math.round(samples[i] * maxI);
+      if (!(v === v)) { v = 0; }               /* NaN 落到静音，避免 Int16 隐式转 0 的歧义 */
+      else if (v > maxI) { v = maxI; }
+      else if (v < minI) { v = minI; }
+      pcm16[i] = v;
+    }
+    return u8;
+  }
+
+  function encodeWav(pcm) {
+    if (!pcm || typeof pcm.length !== 'number') {
+      throw Util.err({ kind: 'unknown', stage: 'encode', message: '没有可编码的音频数据' });
+    }
+    try {
+      return wavFromFloat32(pcm);
+    } catch (e) {
+      if (isRangeError(e)) {
+        throw Util.err({ kind: 'memory', stage: 'encode', message: '文件过大，内存不足，建议先切分后再试' });
+      }
+      throw e;
+    }
+  }
+
+  function toBase64(u8) {
+    if (!u8 || !u8.length) { return ''; }
+    var parts = [];
+    for (var i = 0; i < u8.length; i += B64_CHUNK_BYTES) {
+      var end = Math.min(i + B64_CHUNK_BYTES, u8.length);
+      var s = '';
+      for (var j = i; j < end; j += FROM_CHAR_CHUNK) {
+        var stop = Math.min(j + FROM_CHAR_CHUNK, end);
+        var piece = u8.subarray ? u8.subarray(j, stop) : u8.slice(j, stop);
+        s += String.fromCharCode.apply(null, piece);
+      }
+      parts.push(btoa(s));
+    }
+    return parts.join('');
+  }
+
+  function encodeSegment(pcm, seg) {
+    try {
+      var total = pcm && typeof pcm.length === 'number' ? pcm.length : 0;
+      /* 只复制本段，整段 PCM 保持视图，避免 3 倍内存峰值 */
+      var raws = Math.round(seg.startSample);
+      var rawe = Math.round(seg.endSample);
+      if (!isFinite(raws) || !isFinite(rawe)) {
+        throw Util.err({ kind: 'unknown', stage: 'encode', message: '切片边界无效，无法编码' });
+      }
+      var start = Util.clamp(raws, 0, total);
+      var end = Util.clamp(rawe, start, total);
+      var n = end - start;
+      var tmp = new Float32Array(n);
+
+      if (n > 0) {
+        var view = pcm.subarray ? pcm.subarray(start, end) : pcm.slice(start, end);
+        tmp.set(view);
+        var fadeN = Math.round(CONFIG.FADE_MS / 1000 * SR);
+        if (fadeN > (n >> 1)) { fadeN = n >> 1; }
+        for (var i = 0; i < fadeN; i++) {
+          var g = i / fadeN;
+          tmp[i] *= g;
+          tmp[n - 1 - i] *= g;
+        }
+      }
+
+      var u8 = wavFromFloat32(tmp);
+      var b64 = toBase64(u8);
+      if (b64.length > CONFIG.SAFE_B64) {
+        /* Queue 收到这个错误会把该段再二分，不能静默发出超限请求 */
+        throw Util.err({ kind: 'slice', stage: 'encode', message: '切片仍超出上限' });
+      }
+      return { b64: b64, bytes: u8.length, seconds: n / SR };
+    } catch (e) {
+      if (e && typeof e.kind === 'string') { throw e; }
+      if (isRangeError(e)) {
+        throw Util.err({ kind: 'memory', stage: 'encode', message: '文件过大，内存不足，建议先切分后再试' });
+      }
+      throw Util.err({ kind: 'unknown', stage: 'encode', message: '音频编码失败（' + (e && e.name ? e.name : '未知错误') + '）' });
+    }
+  }
+
+  ns.AudioEngine = {
+    isDecodableExt: isDecodableExt,
+    isAudioExt: isAudioExt,
+    wavDuration: wavDuration,
+    analyze: analyze,
+    decodeToMono16k: decodeToMono16k,
+    slice: slice,
+    encodeSegment: encodeSegment,
+    encodeWav: encodeWav,
+    toBase64: toBase64
+  };
+})(window.ASR2MD = window.ASR2MD || {});
+/* API 客户端：key 内存持有、请求构造、SSE/非流式解析、超时、内部重试与错误映射。
+   接口与错误形状见 build/contracts.md §2；接口事实见 方案.md §2，硬参数一律读 ns.CONFIG。 */
+(function (ns) {
+  'use strict';
+
+  var CONFIG = ns.CONFIG;
+  var Util = ns.Util;
+
+  /* key 只允许停在这个闭包变量里（方案 §5.1 / §10.1）：不落任何存储、日志、DOM 或返回值。 */
+  var key = null;
+  var endpoint = { baseUrl: CONFIG.BASE_URL, model: CONFIG.MODEL };
+  var transport = null;   // ?mock=1 注入 fn(url, init)；null 时走全局 fetch
+
+  var INVISIBLE_RE = /[\u200B-\u200F\uFEFF\s]/g;
+  var BEARER_RE = /^bearer/i;
+  var ASCII_VISIBLE_RE = /^[\x21-\x7E]+$/;
+
+  /* ---------------- key ---------------- */
+
+  function setKey(raw) {
+    var s = String(raw == null ? '' : raw).replace(INVISIBLE_RE, '');
+    // 先去掉空白再剥前缀：粘贴内容里 "Bearer" 与 key 之间常夹着不可见字符或换行
+    while (BEARER_RE.test(s)) { s = s.slice(6); }
+    if (!s) {
+      key = null;
+      return { ok: false, warning: 'API Key 不能为空' };
+    }
+    key = s;
+    // 格式异常只警告，最终以服务端校验为准（方案 §5.1）
+    if (!ASCII_VISIBLE_RE.test(s)) {
+      return { ok: true, warning: 'API Key 含非 ASCII 或空白字符，格式异常（以服务端校验为准）' };
+    }
+    return { ok: true, warning: null };
+  }
+
+  function hasKey() { return !!key; }
+
+  function keyMask() {
+    if (!key) { return null; }
+    var tail = key.length > 4 ? key.slice(-4) : key;
+    return '已配置 ····' + tail + '（' + key.length + ' 字符）';
+  }
+
+  function peekKey() { return key; }
+
+  function clearKey() { key = null; }
+
+  function redact(text) {
+    var s = typeof text === 'string' ? text : String(text == null ? '' : text);
+    // 过短的值做全文替换会把正常文本打碎；真实 key 远长于此，且 1~2 字符的 key 本就无效
+    if (key && key.length >= 8) { s = s.split(key).join('[KEY]'); }
+    s = s.replace(/\bBearer\s+[^\s"',;}]+/gi, 'Bearer [KEY]');
+    // 值只按 token 字符集匹配：否则会把紧随其后的中文括号说明一并吞掉，且对已脱敏文本不幂等
+    s = s.replace(
+      /(api-key|authorization)(["']?\s*[:=]\s*["']?)(?:bearer\s+)?(?:\[KEY\]|[A-Za-z0-9._~+/=-]+)/gi,
+      '$1$2[KEY]'
+    );
+    return s;
+  }
+
+  /* ---------------- endpoint / transport ---------------- */
+
+  function setEndpoint(spec) {
+    spec = spec || {};
+    var url = typeof spec.baseUrl === 'string' ? spec.baseUrl.trim() : '';
+    var norm = url.replace(/\/+$/, '').toLowerCase();
+    endpoint.baseUrl = !/^https?:\/\/[^\s]+$/i.test(url) || CONFIG.LEGACY_BASE_URLS.indexOf(norm) >= 0
+      ? CONFIG.BASE_URL
+      : url.replace(/\/+$/, '');
+    var model = typeof spec.model === 'string' ? spec.model.trim() : '';
+    endpoint.model = model || CONFIG.MODEL;
+    return getEndpoint();
+  }
+
+  function getEndpoint() {
+    return { baseUrl: endpoint.baseUrl, model: endpoint.model };
+  }
+
+  function setTransport(fn) {
+    transport = typeof fn === 'function' ? fn : null;
+  }
+
+  function buildUrl() {
+    var base = endpoint.baseUrl.replace(/\/+$/, '');
+    var path = CONFIG.ENDPOINT.charAt(0) === '/' ? CONFIG.ENDPOINT : '/' + CONFIG.ENDPOINT;
+    return base + path;
+  }
+
+  /* ---------------- 错误构造 ---------------- */
+
+  function abortError() {
+    return Util.err({ kind: 'abort', stage: 'request', message: '已取消', retriable: false });
+  }
+
+  /* 超时文案里不写具体秒数，硬参数只在 方案.md §4 定义 */
+  function timeoutError(reason) {
+    var msg = reason === 'connect' ? '连接超时，请检查网络/代理后重试'
+      : reason === 'idle' ? '流式响应长时间无数据，已中断'
+        : '请求超时，请稍后重试';
+    return Util.err({ kind: 'timeout', stage: 'request', message: msg, retriable: true });
+  }
+
+  function httpError(status, detail, code) {
+    var extra = detail ? '：' + detail : '';
+    var msg;
+    if (status === 401) { msg = 'API Key 无效'; }
+    else if (status === 402) { msg = '账户余额不足'; }
+    else if (status === 403) { msg = '当前地区或风控限制'; }
+    else if (status === 404) { msg = '接口地址不存在，请检查 base_url'; }
+    else if (status === 421) { msg = '服务端判定内容不可处理'; }
+    else if (status === 400) { msg = (detail || '请求格式或大小不合规') + '（已重切仍失败）'; }
+    else if (status === 429) { msg = '限流，稍后重试' + extra; }
+    else if (status >= 500) { msg = '服务端异常（HTTP ' + status + '）' + extra; }
+    else if (!status) { msg = '请求失败，未收到有效响应' + extra; }
+    else { msg = '请求失败（HTTP ' + status + '）' + extra; }
+    return Util.err({
+      kind: 'http',
+      httpStatus: status || null,
+      code: code === undefined ? null : code,
+      message: redact(msg),
+      retriable: status === 429 || status >= 500,
+      stage: 'request'
+    });
+  }
+
+  function parseErrorBody(text) {
+    var msg = '';
+    var code = null;
+    try {
+      var j = JSON.parse(text);
+      if (j && j.error && typeof j.error === 'object') {
+        if (typeof j.error.message === 'string') { msg = j.error.message; }
+        if (!msg && typeof j.error.param === 'string') { msg = j.error.param; }
+        if (j.error.code !== undefined && j.error.code !== null) { code = j.error.code; }
+      } else if (j && typeof j.message === 'string') {
+        msg = j.message;
+      }
+    } catch (e) {
+      // 非 JSON 错误体（网关 HTML 等）只留一小段，避免把整页塞进提示
+      if (text) { msg = String(text).slice(0, 300); }
+    }
+    return { message: redact(msg), code: code };
+  }
+
+  /* ---------------- 时间窗看门狗 ---------------- */
+
+  /* 全部以 Date.now() 差值判定：后台标签页的 setTimeout 会被节流，靠定时器剩余量判断会误报超时。
+     connect 覆盖到首响应（流式到首帧），idle 覆盖流式相邻帧，total 覆盖单段全程。 */
+  function createGuard(onExpire) {
+    var timer = null;
+    var settled = false;
+    var firedError = null;
+    var marks = { connect: 0, total: 0, idle: 0 };
+    var rejectFn = null;
+    var promise = new Promise(function (resolve, reject) { rejectFn = reject; });
+    promise.catch(function () { });   // 未挂 race 时也不要冒 unhandledrejection
+
+    function clearTimer() {
+      if (timer) { clearTimeout(timer); timer = null; }
+    }
+
+    function fire(name) {
+      if (settled) { return; }
+      settled = true;
+      clearTimer();
+      firedError = timeoutError(name);
+      rejectFn(firedError);
+      try { onExpire(name); } catch (e) { /* 中止请求失败不改变超时结论 */ }
+    }
+
+    function arm() {
+      clearTimer();
+      if (settled) { return; }
+      var now = Date.now();
+      var name = null;
+      var at = 0;
+      Object.keys(marks).forEach(function (k) {
+        var m = marks[k];
+        if (m && (!at || m < at)) { at = m; name = k; }
+      });
+      if (!name) { return; }
+      var wait = at - now;
+      if (wait < 0) { wait = 0; }
+      timer = setTimeout(function () {
+        timer = null;
+        if (settled) { return; }
+        var t = Date.now();
+        if (t < at) { arm(); return; }   // 定时器提前触发（时钟回拨）就重新排队
+        var expired = null;
+        var expiredAt = 0;
+        Object.keys(marks).forEach(function (k) {
+          var m = marks[k];
+          if (m && m <= t && (!expiredAt || m < expiredAt)) { expiredAt = m; expired = k; }
+        });
+        if (!expired) { arm(); return; }
+        fire(expired);
+      }, wait);
+    }
+
+    return {
+      promise: promise,
+      error: function () { return firedError; },
+      start: function () {
+        var now = Date.now();
+        marks.total = now + CONFIG.SEGMENT_TOTAL_MS;
+        marks.connect = now + CONFIG.CONNECT_TIMEOUT_MS;
+        marks.idle = 0;
+        arm();
+      },
+      clearConnect: function () { marks.connect = 0; arm(); },
+      touch: function () {
+        marks.connect = 0;
+        marks.idle = Date.now() + CONFIG.STREAM_IDLE_MS;
+        arm();
+      },
+      stop: function () { settled = true; clearTimer(); }
+    };
+  }
+
+  /* ---------------- 响应解析 ---------------- */
+
+  function parseJson(text) {
+    try { return JSON.parse(text); }
+    catch (e) {
+      throw Util.err({ kind: 'unknown', stage: 'parse', message: '响应不是合法 JSON，无法解析', retriable: false });
+    }
+  }
+
+  function readSeconds(obj) {
+    var v = obj && obj.usage ? obj.usage.seconds : undefined;
+    if (typeof v === 'number' && isFinite(v)) { return Math.round(v); }
+    if (typeof v === 'string' && v.trim() !== '' && isFinite(Number(v))) { return Math.round(Number(v)); }
+    return null;
+  }
+
+  function firstChoice(data) {
+    return data && Array.isArray(data.choices) && data.choices.length ? data.choices[0] : null;
+  }
+
+  function pickContent(data) {
+    var c = firstChoice(data);
+    return c && c.message && typeof c.message.content === 'string' ? c.message.content : '';
+  }
+
+  function pickFinish(data) {
+    var c = firstChoice(data);
+    return c && typeof c.finish_reason === 'string' && c.finish_reason ? c.finish_reason : null;
+  }
+
+  /* 收尾判定：截断优先于空文本（两者都命中时按截断上报，便于 Queue 二分重切） */
+  function finish(text, seconds, finishReason, raw) {
+    var t = typeof text === 'string' ? text : '';
+    if (finishReason === 'length') {
+      throw Util.err({ kind: 'truncated', stage: 'parse', message: '转写结果被截断，可能不完整', retriable: false });
+    }
+    if (!t.trim() && (seconds === null || seconds > 0)) {
+      throw Util.err({ kind: 'empty', stage: 'parse', message: '未识别到有效语音（疑似静音/纯音乐）', retriable: false });
+    }
+    return { text: t, seconds: seconds, finishReason: finishReason, raw: raw };
+  }
+
+  /* ---------------- 单次请求 ---------------- */
+
+  async function attemptOnce(ctx) {
+    if (ctx.signal && ctx.signal.aborted) { throw abortError(); }
+
+    var ctrl = null;
+    if (typeof AbortController === 'function') { ctrl = new AbortController(); }
+
+    var abortReject = null;
+    var abortPromise = new Promise(function (resolve, reject) { abortReject = reject; });
+    abortPromise.catch(function () { });
+
+    function onExternalAbort() {
+      ctx.externalAbort = true;
+      if (ctrl) { try { ctrl.abort(); } catch (e) { /* 已中止 */ } }
+      abortReject(abortError());
+    }
+    if (ctx.signal) { ctx.signal.addEventListener('abort', onExternalAbort); }
+
+    var guard = createGuard(function () {
+      if (ctrl) { try { ctrl.abort(); } catch (e) { /* 已中止 */ } }
+    });
+
+    // 外部取消自己带一个立即失败的 promise：注入的 transport 可能不认 signal
+    function race(p) {
+      return Promise.race([Promise.resolve(p), guard.promise, abortPromise]);
+    }
+
+    function normalize(e) {
+      if (e && typeof e === 'object' && typeof e.kind === 'string') { return e; }
+      if (ctx.externalAbort) { return abortError(); }
+      var te = guard.error();
+      if (te) { return te; }
+      if (e && e.name === 'AbortError') { return abortError(); }
+      var reason = e && e.message ? redact(String(e.message)) : '';
+      return Util.err({
+        kind: 'network',
+        stage: 'request',
+        message: '网络请求失败，请检查网络/代理/防火墙' + (reason ? '（' + reason + '）' : ''),
+        retriable: true
+      });
+    }
+
+    try {
+      guard.start();
+      var init = { method: 'POST', headers: ctx.headers, body: ctx.bodyText };
+      if (ctrl) { init.signal = ctrl.signal; }
+
+      var res;
+      if (transport) { res = await race(transport(ctx.url, init)); }
+      else if (typeof fetch === 'function') { res = await race(fetch(ctx.url, init)); }
+      else { throw Util.err({ kind: 'unsupported', stage: 'request', message: '当前环境不支持 fetch' }); }
+
+      if (!res || typeof res !== 'object') {
+        throw Util.err({ kind: 'unknown', stage: 'request', message: '响应对象无效', retriable: false });
+      }
+
+      if (res.ok !== true) {
+        var status = typeof res.status === 'number' ? res.status : 0;
+        var rawErrText = '';
+        try {
+          rawErrText = await race(typeof res.text === 'function' ? res.text() : '');
+        } catch (e) {
+          if (e && typeof e.kind === 'string') { throw e; }
+        }
+        var info = parseErrorBody(rawErrText);
+        throw httpError(status, info.message, info.code);
+      }
+
+      if (!ctx.stream) {
+        guard.clearConnect();
+        var bodyText = await race(res.text());
+        var data = parseJson(bodyText);
+        return finish(pickContent(data), readSeconds(data), pickFinish(data), data);
+      }
+
+      return await readStream(res, guard, race, ctx);
+    } catch (e) {
+      throw normalize(e);
+    } finally {
+      guard.stop();
+      if (ctx.signal) { ctx.signal.removeEventListener('abort', onExternalAbort); }
+    }
+  }
+
+  async function readStream(res, guard, race, ctx) {
+    if (!res.body || typeof res.body.getReader !== 'function') {
+      // 替身或中间层可能不给 body：退回整体读取，按非流式 JSON 解析
+      guard.clearConnect();
+      var txt = await race(res.text());
+      var data = parseJson(txt);
+      return finish(pickContent(data), readSeconds(data), pickFinish(data), data);
+    }
+
+    var reader = res.body.getReader();
+    var decoder = new TextDecoder('utf-8');
+    var buf = '';
+    var acc = '';
+    var seconds = null;
+    var finishReason = null;
+    var frames = [];
+    var done = false;
+
+    function handleLine(line) {
+      var s = line.trim();
+      if (!s || s.indexOf('data:') !== 0) { return false; }   // 忽略 event:/id:/注释
+      var payload = s.slice(5).trim();
+      if (!payload) { return false; }
+      if (payload === '[DONE]') { return true; }
+      var obj;
+      try { obj = JSON.parse(payload); } catch (e) { return false; }   // 容忍半截/非 JSON 片
+      if (!obj || typeof obj !== 'object') { return false; }
+      frames.push(obj);
+
+      var sec = readSeconds(obj);
+      if (sec !== null) { seconds = sec; }
+
+      if (Array.isArray(obj.choices) && obj.choices.length > 0) {
+        var c = obj.choices[0];
+        if (c && typeof c.finish_reason === 'string' && c.finish_reason) { finishReason = c.finish_reason; }
+        var delta = c && c.delta ? c.delta.content : null;
+        // 中间帧的 null / "" 是心跳，不是内容；末帧 choices:[] 也不走这里
+        if (typeof delta === 'string' && delta !== '') {
+          acc += delta;
+          if (ctx.onDelta) {
+            try { ctx.onDelta(delta, acc); } catch (e) { /* 回调异常不打断转写 */ }
+          }
+        }
+      }
+      return false;
+    }
+
+    try {
+      while (!done) {
+        var chunk = await race(reader.read());
+        if (chunk.done) { break; }
+        guard.touch();
+        var piece = decoder.decode(chunk.value, { stream: true });
+        if (!piece) { continue; }
+        buf += piece;
+        var nl;
+        while ((nl = buf.indexOf('\n')) >= 0) {
+          var line = buf.slice(0, nl);
+          buf = buf.slice(nl + 1);
+          if (line.charCodeAt(line.length - 1) === 13) { line = line.slice(0, -1); }
+          if (handleLine(line)) { done = true; break; }
+        }
+      }
+      if (!done) {
+        var tail = buf + decoder.decode();
+        if (tail.trim()) { handleLine(tail); }
+      }
+    } finally {
+      try { reader.cancel().catch(function () { }); } catch (e) { /* 已释放 */ }
+    }
+
+    // 流式没有单一响应体，raw 交回已解析的帧序列供热「查看原始 JSON」
+    return finish(acc, seconds, finishReason, frames);
+  }
+
+  /* ---------------- 对外主链路 ---------------- */
+
+  function buildBody(ctx) {
+    var payload = {
+      model: endpoint.model,
+      messages: [{
+        role: 'user',
+        content: [{
+          type: 'input_audio',
+          input_audio: { data: 'data:' + ctx.mime + ';base64,' + ctx.b64 }
+        }]
+      }],
+      stream: ctx.stream
+    };
+    if (ctx.lang && ctx.lang !== CONFIG.LANG_DEFAULT) {
+      payload.asr_options = { language: ctx.lang };
+    }
+    return JSON.stringify(payload);
+  }
+
+  /* 退避带对称抖动，避免多段并发在同一时刻一起重试再次撞限流 */
+  function backoffFor(attempt) {
+    var arr = CONFIG.BACKOFF_MS;
+    var base = arr[Math.min(attempt, arr.length - 1)] || 0;
+    var jitter = (Math.random() * 2 - 1) * CONFIG.BACKOFF_JITTER;
+    var ms = Math.round(base * (1 + jitter));
+    return ms > 0 ? ms : 0;
+  }
+
+  /* 后台节流：按 Date.now 截止时间判满（方案 §5.6） */
+  function waitBackoff(ms, signal) {
+    var end = Date.now() + ms;
+    return new Promise(function (resolve) {
+      (function tick() {
+        if (signal && signal.aborted) { resolve(); return; }
+        var left = end - Date.now();
+        if (left <= 0) { resolve(); } else { setTimeout(tick, Math.min(left, 200)); }
+      })();
+    });
+  }
+
+  async function transcribe(opts) {
+    opts = opts || {};
+    var b64 = typeof opts.b64 === 'string' ? opts.b64 : '';
+    var signal = opts.signal || null;
+
+    if (!key) {
+      throw Util.err({ kind: 'config', stage: 'request', message: '请先填写 API Key', retriable: false });
+    }
+    if (!b64) {
+      throw Util.err({ kind: 'config', stage: 'request', message: '缺少音频数据', retriable: false });
+    }
+
+    var ctx = {
+      url: buildUrl(),
+      b64: b64,
+      mime: typeof opts.mime === 'string' && opts.mime ? opts.mime : CONFIG.MIME_BY_EXT.wav,
+      lang: typeof opts.lang === 'string' && opts.lang ? opts.lang : CONFIG.LANG_DEFAULT,
+      stream: opts.stream === true,
+      signal: signal,
+      onDelta: typeof opts.onDelta === 'function' ? opts.onDelta : null,
+      externalAbort: false
+    };
+    ctx.headers = { 'Content-Type': 'application/json', 'api-key': key };
+    ctx.bodyText = buildBody(ctx);
+
+    var lastErr = null;
+    var maxRetry = CONFIG.RETRY_MAX;
+
+    for (var attempt = 0; attempt <= maxRetry; attempt++) {
+      if (signal && signal.aborted) { throw abortError(); }
+      try {
+        return await attemptOnce(ctx);
+      } catch (e) {
+        var err = e;
+        if (err.kind === 'abort') { throw err; }
+        if (!err.retriable) { throw err; }
+        lastErr = err;
+        if (attempt >= maxRetry) { break; }
+        await waitBackoff(backoffFor(attempt), signal);
+        if (signal && signal.aborted) { throw abortError(); }
+      }
+    }
+
+    if (lastErr && lastErr.httpStatus === 429) {
+      throw Util.err({
+        kind: 'http',
+        httpStatus: 429,
+        code: lastErr.code,
+        message: lastErr.message && lastErr.message.indexOf('限流') >= 0 ? lastErr.message : '限流，稍后重试',
+        retriable: false,
+        stage: 'request'
+      });
+    }
+    if (lastErr) {
+      lastErr.retriable = false;
+      throw lastErr;
+    }
+    throw Util.err({ kind: 'unknown', stage: 'request', message: '请求失败', retriable: false });
+  }
+
+  ns.ApiClient = {
+    setKey: setKey,
+    hasKey: hasKey,
+    keyMask: keyMask,
+    peekKey: peekKey,
+    clearKey: clearKey,
+    setEndpoint: setEndpoint,
+    getEndpoint: getEndpoint,
+    redact: redact,
+    setTransport: setTransport,
+    transcribe: transcribe
+  };
+})(window.ASR2MD = window.ASR2MD || {});
+/* 渲染与导出：md 拼装（纯函数，Node 可测）与保存/复制（浏览器 API 只在函数体内触达）。
+   纯函数不脱敏；对外输出经 Queue.buildMd() 过 redact()。 */
+(function (ns) {
+  'use strict';
+
+  var C = ns.CONFIG;
+
+  // 方案 §5.4 的可读性阈值（"每 200 字内插一个换行"），不在 §4 硬参数表内，故留在本模块。
+  var LINE_SOFT_MAX = 200;
+  var ZWSP = '\u200B';
+  // 模板元信息行内分隔用两个全角空格，与 方案 §5.4 模板逐字对齐。
+  var PAD = '\u3000\u3000';
+  // 行首命中这些标记会被 md 解析器当成结构，插入零宽空格降级为普通文本。
+  var HEAD_MARK_RE = /^(---|\*\*\*|___|```|#{1,6}\s)/;
+  var WIN_ILLEGAL_RE = /[\u0000-\u001F\u007F<>:"\/\\|?*]/g;
+  var SENTENCE_BREAK_RE = /[。！？；]/;
+
+  var MD_MIME = 'text/markdown;charset=utf-8';
+  var MD_ACCEPT = { 'text/markdown': ['.md'] };
+  // 立即 revoke 会让部分浏览器下载到 0 字节文件，留足触发时间再释放。
+  var REVOKE_DELAY_MS = 60000;
+
+  function pad2(n) {
+    return (n < 10 ? '0' : '') + n;
+  }
+
+  /* 展示文案里的取样率从 CONFIG 派生，避免出现第二份 16 kHz 字面量。 */
+  function sampleRateText() {
+    return (C.SAMPLE_RATE / 1000) + ' kHz';
+  }
+
+  function redactText(s) {
+    var api = ns.ApiClient;
+    if (api && typeof api.redact === 'function') {
+      return api.redact(String(s == null ? '' : s));
+    }
+    return String(s == null ? '' : s);
+  }
+
+  // ---------- Render ----------
+
+  function formatDuration(sec) {
+    if (sec == null || sec === '') { return '—'; }
+    var s = Number(sec);
+    if (!isFinite(s) || s < 0) { return '—'; }
+    s = Math.floor(s);
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var ss = s % 60;
+    if (h > 0) { return h + ' 小时 ' + pad2(m) + ' 分 ' + pad2(ss) + ' 秒'; }
+    if (m > 0) { return m + ' 分 ' + pad2(ss) + ' 秒'; }
+    return ss + ' 秒';
+  }
+
+  /* 十进制单位：与磁盘/资源管理器显示一致，用户对账时不易产生 1.5 倍偏差。 */
+  function formatSize(bytes) {
+    if (bytes == null || bytes === '') { return '—'; }
+    var n = Number(bytes);
+    if (!isFinite(n) || n < 0) { return '—'; }
+    if (n >= 1000000) { return (n / 1000000).toFixed(1) + ' MB'; }
+    return (n / 1000).toFixed(1) + ' KB';
+  }
+
+  function nameOf(item) {
+    if (item == null) { return ''; }
+    if (typeof item === 'string') { return item; }
+    return String(item.name == null ? '' : item.name);
+  }
+
+  function toFileList(files) {
+    if (files == null) { return []; }
+    if (Array.isArray(files)) { return files; }
+    if (typeof files === 'string' || typeof files === 'object') { return [files]; }
+    return [];
+  }
+
+  /* 只去掉最后一个点之后的部分；以点开头的是隐藏名（.env），沿用原名。 */
+  function stripExt(name) {
+    var s = String(name == null ? '' : name);
+    var i = s.lastIndexOf('.');
+    return i > 0 ? s.slice(0, i) : s;
+  }
+
+  function stampLocal(d) {
+    return '' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) +
+      '_' + pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds());
+  }
+
+  function pickName(files, custom) {
+    var list = toFileList(files);
+    var c = String(custom == null ? '' : custom).trim();
+    if (c) {
+      c = c.replace(WIN_ILLEGAL_RE, '_');
+      if (!/\.md$/i.test(c)) { c += '.md'; }
+      return c;
+    }
+    if (list.length === 1) {
+      var base = stripExt(nameOf(list[0])) || '转写';
+      return base + '_转写.md';
+    }
+    // 本地时间而非 UTC：文件名要能被用户按自己看到的时钟对上。
+    return '转写记录_' + stampLocal(new Date()) + '.md';
+  }
+
+  function pickPrice(meta) {
+    var raw = meta ? meta.pricePerHour : null;
+    var n = Number(raw);
+    if (raw == null || raw === '' || !isFinite(n) || n < 0) { return Number(C.PRICE_PER_HOUR); }
+    return n;
+  }
+
+  /* 单价按用户填写的有效位展示（¥0.5 而非 ¥0.50），费用总额统一两位小数。 */
+  function formatPrice(p) {
+    return p.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  }
+
+  function formatDateTime(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
+      ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+  }
+
+  /* 按句末标点累积；单句本身超长时硬切，保证每行 ≤ LINE_SOFT_MAX，且不增删字符。 */
+  function wrapLongLine(line) {
+    if (line.length <= LINE_SOFT_MAX) { return [line]; }
+    var parts = [];
+    var cur = '';
+    for (var i = 0; i < line.length; i++) {
+      cur += line.charAt(i);
+      if (SENTENCE_BREAK_RE.test(line.charAt(i))) {
+        parts.push(cur);
+        cur = '';
+      }
+    }
+    if (cur) { parts.push(cur); }
+
+    var out = [];
+    var buf = '';
+    for (var j = 0; j < parts.length; j++) {
+      var p = parts[j];
+      while (p.length > LINE_SOFT_MAX) {
+        if (buf) { out.push(buf); buf = ''; }
+        out.push(p.slice(0, LINE_SOFT_MAX));
+        p = p.slice(LINE_SOFT_MAX);
+      }
+      if (!p) { continue; }
+      if (buf && buf.length + p.length > LINE_SOFT_MAX) {
+        out.push(buf);
+        buf = p;
+      } else {
+        buf += p;
+      }
+    }
+    if (buf) { out.push(buf); }
+    return out;
+  }
+
+  /* 先按原始行首判定保护标记，再折行：折行不能把正文中段的 --- 变成"行首"后被误加零宽空格。 */
+  function bodyLines(text, protect) {
+    var raw = String(text == null ? '' : text);
+    if (!raw) { return []; }
+    var src = raw.split(/\r\n|\r|\n/);
+    // 只丢掉文本尾部的换行符，避免章节末尾堆积空行；字符本身不动。
+    while (src.length && src[src.length - 1] === '') { src.pop(); }
+
+    var out = [];
+    for (var i = 0; i < src.length; i++) {
+      var line = src[i];
+      if (protect && HEAD_MARK_RE.test(line)) { line = ZWSP + line; }
+      var wrapped = wrapLongLine(line);
+      for (var j = 0; j < wrapped.length; j++) { out.push(wrapped[j]); }
+    }
+    return out;
+  }
+
+  function sizeLine(r) {
+    var s = '- 大小：' + formatSize(r.sizeBytes);
+    if (typeof r.durationSec === 'number' && isFinite(r.durationSec)) {
+      s += PAD + '时长：' + formatDuration(r.durationSec);
+    }
+    return s;
+  }
+
+  function processLine(r) {
+    if (r.mode === 'direct') { return '- 处理：直传'; }
+    if (r.mode === 'transcoded') { return '- 处理：转 ' + sampleRateText() + ' 单声道'; }
+    if (r.mode === 'sliced') {
+      var n = Number(r.segmentCount);
+      return '- 处理：转 ' + sampleRateText() + ' 单声道 → 切 ' + (isFinite(n) ? n : 0) + ' 段';
+    }
+    return '';
+  }
+
+  function reasonOf(r) {
+    var msg = r && r.error && r.error.message ? redactText(r.error.message) : '';
+    return msg ? ' —— ' + msg : '';
+  }
+
+  function missingSegments(r) {
+    var arr = Array.isArray(r.failedSegments) ? r.failedSegments.slice() : [];
+    arr = arr.map(function (x) { return Number(x); }).filter(function (x) { return isFinite(x); });
+    arr.sort(function (a, b) { return a - b; });
+    return arr;
+  }
+
+  function statusLine(r) {
+    var ms = Number(r.elapsedMs);
+    var elapsed = (isFinite(ms) && ms > 0) ? PAD + '耗时：' + (ms / 1000).toFixed(1) + ' s' : '';
+    var st = r.status;
+    if (st === 'success') { return '- 状态：成功' + elapsed; }
+    if (st === 'partial') {
+      var miss = missingSegments(r);
+      var detail = miss.length ? '（缺第 ' + miss.join('、') + ' 段）' : '';
+      return '- 状态：部分失败' + detail + elapsed;
+    }
+    if (st === 'canceled') { return '- 状态：已取消' + elapsed; }
+    if (st === 'unsupported') { return '- 状态：失败' + reasonOf(r) + elapsed; }
+    return '- 状态：失败' + reasonOf(r) + elapsed;
+  }
+
+  /* 关闭元信息后成功项只留正文；失败项仍须注明原因（方案 §5.4） */
+  function noMetaNote(r) {
+    var st = r.status;
+    if (st === 'success') { return ''; }
+    if (st === 'partial') {
+      var miss = missingSegments(r);
+      return miss.length
+        ? '该文件部分内容缺失（缺第 ' + miss.join('、') + ' 段），正文可能不完整'
+        : '该文件部分内容缺失，正文可能不完整';
+    }
+    if (st === 'canceled') { return '该文件未完成：已取消'; }
+    if (st === 'unsupported') { return '该文件未能转写' + reasonOf(r); }
+    return '该文件未能转写' + reasonOf(r);
+  }
+
+  function buildMarkdown(results, meta) {
+    meta = meta || {};
+    var list = Array.isArray(results) ? results : [];
+    var showMeta = meta.showMeta !== false;
+    var protect = meta.protectOriginal !== false;
+    var bom = meta.bom === true;
+    var model = meta.model ? String(meta.model) : String(C.MODEL);
+    var lang = meta.lang ? String(meta.lang) : String(C.LANG_DEFAULT);
+    var price = pickPrice(meta);
+    var at = meta.generatedAt instanceof Date ? meta.generatedAt : new Date();
+
+    var okCount = 0;
+    var failCount = 0;
+    var totalSec = 0;
+    var billSec = 0;
+    var overlapSec = 0;
+    list.forEach(function (r) {
+      r = r || {};
+      if (r.status === 'success' || r.status === 'partial') { okCount += 1; } else { failCount += 1; }
+      var d = Number(r.durationSec);
+      if (r.durationSec != null && isFinite(d) && d > 0) { totalSec += d; }
+      var b = Number(r.seconds);
+      if (isFinite(b) && b > 0) { billSec += b; }
+      var o = Number(r.overlapSec);
+      if (isFinite(o) && o > 0) { overlapSec += o; }
+    });
+
+    var lines = ['# 语音转写记录'];
+
+    if (showMeta) {
+      var cost = (billSec * price / 3600).toFixed(2);
+      var costLine = '- 音频总时长：' + formatDuration(totalSec) + PAD +
+        '预估费用：约 ¥' + cost + '（¥' + formatPrice(price) + '/小时，以账单为准）';
+      if (overlapSec > 0) {
+        costLine += PAD + '（含 ' + overlapSec.toFixed(1) + ' s 重叠，略高于录音时长）';
+      }
+      lines.push('');
+      lines.push('- 生成时间：' + formatDateTime(at));
+      lines.push('- 模型：' + model + PAD + '语种参数：' + lang);
+      lines.push('- 文件：' + list.length + ' 个（成功 ' + okCount + ' / 失败 ' + failCount + '）');
+      lines.push(costLine);
+      lines.push('');
+      lines.push('---');
+    }
+
+    list.forEach(function (r, i) {
+      r = r || {};
+      var note = '';
+      lines.push('');
+      lines.push('## ' + (i + 1) + '. ' + nameOf(r));
+      lines.push('');
+      if (showMeta) {
+        lines.push(sizeLine(r));
+        var proc = processLine(r);
+        if (proc) { lines.push(proc); }
+        lines.push(statusLine(r));
+      } else {
+        note = noMetaNote(r);
+        if (note) { lines.push(note); }
+      }
+      var body = bodyLines(r.text, protect);
+      if (body.length) {
+        if (showMeta || note) { lines.push(''); }
+        Array.prototype.push.apply(lines, body);
+      }
+      if (showMeta) {
+        lines.push('');
+        lines.push('---');
+      }
+    });
+
+    var out = lines.join('\n') + '\n';
+    return bom ? '\uFEFF' + out : out;
+  }
+
+  // ---------- Export ----------
+
+  function hasPicker() {
+    return typeof window !== 'undefined' && !!window &&
+      typeof window.showSaveFilePicker === 'function';
+  }
+
+  function errOf(e, fallbackMsg) {
+    var msg = (e && e.message) ? String(e.message) : '';
+    return ns.Util.err({ kind: 'save', stage: 'save', message: redactText(msg || fallbackMsg) });
+  }
+
+  function downloadFallback(blob, fileName) {
+    try {
+      var doc = (typeof document !== 'undefined') ? document : null;
+      if (!doc || typeof doc.createElement !== 'function' ||
+          typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
+        throw new Error('当前环境不支持另存为或下载');
+      }
+      var url = URL.createObjectURL(blob);
+      var a = doc.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      (doc.body || doc.documentElement).appendChild(a);
+      a.click();
+      if (a.parentNode) { a.parentNode.removeChild(a); }
+      setTimeout(function () {
+        try { URL.revokeObjectURL(url); } catch (e) { /* 忽略：已卸载页面里 revoke 会抛 */ }
+      }, REVOKE_DELAY_MS);
+      return { ok: true, mode: 'download', name: fileName };
+    } catch (e) {
+      return { ok: false, mode: 'none', name: fileName, error: errOf(e, '保存失败') };
+    }
+  }
+
+  function handlePickError(e, blob, fileName) {
+    var n = e && e.name;
+    if (n === 'AbortError') {
+      // 用户主动取消：不是错误，调用方只需提示"内容仍在预览区"。
+      return { ok: false, mode: 'picker', canceled: true, name: fileName };
+    }
+    if (n === 'NotAllowedError' || n === 'SecurityError') {
+      return downloadFallback(blob, fileName);
+    }
+    return { ok: false, mode: 'none', name: fileName, error: errOf(e, '保存失败') };
+  }
+
+  function saveMarkdown(text, name) {
+    var fileName = String(name == null ? '' : name) || '转写记录.md';
+    var blob;
+    try {
+      blob = new Blob([String(text == null ? '' : text)], { type: MD_MIME });
+    } catch (e) {
+      return Promise.resolve({ ok: false, mode: 'none', name: fileName, error: errOf(e, '保存失败') });
+    }
+
+    if (!hasPicker()) {
+      return Promise.resolve(downloadFallback(blob, fileName));
+    }
+
+    var pending;
+    try {
+      // 关键：选择器必须在第一个 await 之前同步发起，否则用户点击激活窗口已过期（方案 §5.2）。
+      pending = window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{ description: 'Markdown', accept: MD_ACCEPT }]
+      });
+    } catch (e) {
+      return Promise.resolve(handlePickError(e, blob, fileName));
+    }
+    if (!pending || typeof pending.then !== 'function') {
+      return Promise.resolve(downloadFallback(blob, fileName));
+    }
+
+    return Promise.resolve(pending).then(function (handle) {
+      return Promise.resolve(handle.createWritable()).then(function (writable) {
+        // close 之前磁盘上不会出现半截文件。
+        return Promise.resolve(writable.write(blob)).then(function () {
+          return writable.close();
+        });
+      });
+    }).then(function () {
+      return { ok: true, mode: 'picker', name: fileName };
+    }, function (e) {
+      return handlePickError(e, blob, fileName);
+    });
+  }
+
+  function legacyCopy(s) {
+    try {
+      var doc = (typeof document !== 'undefined') ? document : null;
+      if (!doc || !doc.body || typeof doc.createElement !== 'function') { return { ok: false }; }
+      var ta = doc.createElement('textarea');
+      ta.value = s;
+      ta.setAttribute('readonly', 'readonly');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      doc.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, s.length);
+      var ok = false;
+      try { ok = doc.execCommand('copy'); } catch (e) { ok = false; }
+      doc.body.removeChild(ta);
+      return { ok: !!ok };
+    } catch (e) {
+      return { ok: false };
+    }
+  }
+
+  function copyText(text) {
+    var s = String(text == null ? '' : text);
+    var nav = (typeof navigator !== 'undefined' && navigator) ? navigator
+      : ((typeof window !== 'undefined' && window) ? window.navigator : null);
+    if (nav && nav.clipboard && typeof nav.clipboard.writeText === 'function') {
+      var p;
+      try {
+        p = nav.clipboard.writeText(s);
+      } catch (e) {
+        // 非安全上下文下可能同步抛错，直接走降级路径，不向用户抛异常。
+        return Promise.resolve(legacyCopy(s));
+      }
+      if (p && typeof p.then === 'function') {
+        return p.then(function () { return { ok: true }; }, function () { return legacyCopy(s); });
+      }
+    }
+    return Promise.resolve(legacyCopy(s));
+  }
+
+  ns.Render = {
+    formatDuration: formatDuration,
+    formatSize: formatSize,
+    pickName: pickName,
+    buildMarkdown: buildMarkdown
+  };
+
+  ns.Export = {
+    saveMarkdown: saveMarkdown,
+    copyText: copyText,
+    hasPicker: hasPicker
+  };
+})(window.ASR2MD = window.ASR2MD || {});
+/* 队列 / 状态机 / 界面：主会话独占模块（方案 §12 单一写者）。 */
+(function (ns) {
+  'use strict';
+
+  var C = ns.CONFIG, U = ns.Util;
+  var settings = ns.Config.loadSettings().settings;
+  var settingsWarned = false;
+  var showTimer = 0;
+
+  var state = {
+    files: [],
+    running: false,
+    canceling: false,
+    md: '',
+    startedAt: 0
+  };
+  var bus = {};
+
+  function on(evt, fn) { (bus[evt] = bus[evt] || []).push(fn); }
+  function emit(evt, payload) {
+    (bus[evt] || []).forEach(function (fn) {
+      try { fn(payload); } catch (e) { /* 事件订阅方异常不得中断主链路 */ }
+    });
+  }
+
+  /* ---------- 并发池：仅段任务入池（方案 §5.5） ---------- */
+  function makePool(limit) {
+    var q = [], active = 0;
+    function pump() {
+      while (active < limit && q.length) {
+        (function (job) {
+          active += 1;
+          function done() {
+            active -= 1;
+            pump();
+          }
+          Promise.resolve().then(job.fn).then(job.resolve, job.reject).then(done, done);
+        })(q.shift());
+      }
+    }
+    return {
+      run: function (fn) {
+        return new Promise(function (resolve, reject) {
+          q.push({ fn: fn, resolve: resolve, reject: reject });
+          pump();
+        });
+      },
+      setLimit: function (n) { limit = Math.max(1, n); pump(); }
+    };
+  }
+  var pool = makePool(settings.concurrency);
+
+  /* ---------- 文件项 ---------- */
+  function newItem(file) {
+    return {
+      id: U.uid('f'),
+      file: file,
+      name: file.name,
+      sizeBytes: file.size,
+      lastModified: file.lastModified || 0,
+      status: 'pending',
+      durationSec: null,
+      mode: null,
+      segmentCount: null,
+      doneCount: 0,
+      segments: [],
+      failedSegments: [],
+      text: '',
+      seconds: 0,
+      elapsedMs: 0,
+      error: null,
+      degraded: false,
+      overlapSec: 0,
+      progress: 0,
+      abort: null,
+      canceled: false,
+      removeAfter: false,
+      startedAt: 0
+    };
+  }
+
+  function findItem(id) {
+    for (var i = 0; i < state.files.length; i += 1) {
+      if (state.files[i].id === id) { return state.files[i]; }
+    }
+    return null;
+  }
+
+  function makeSeg(index, start, end, degraded) {
+    return {
+      index: index,
+      start: start,
+      end: end,
+      startSample: Math.round(start * C.SAMPLE_RATE),
+      endSample: Math.round(end * C.SAMPLE_RATE),
+      degraded: !!degraded,
+      bisected: false,
+      status: 'pending',
+      text: '',
+      seconds: 0,
+      raw: null,
+      error: null
+    };
+  }
+
+  function makeSegFrom(sd) {
+    var s = makeSeg(sd.index, sd.start, sd.end, sd.degraded);
+    if (sd.startSample != null) { s.startSample = sd.startSample; }
+    if (sd.endSample != null) { s.endSample = sd.endSample; }
+    return s;
+  }
+
+  function finishedStatus(s) {
+    return s === 'success' || s === 'partial' || s === 'failed' || s === 'canceled' || s === 'unsupported';
+  }
+
+  function addFiles(list) {
+    var out = { added: 0, dup: 0, ignored: 0 };
+    Array.prototype.forEach.call(list || [], function (f) {
+      if (!f || typeof f.name !== 'string' || typeof f.size !== 'number') { out.ignored += 1; return; }
+      var ext = U.extOf(f.name);
+      if (!ns.AudioEngine.isAudioExt(ext)) { out.ignored += 1; return; }
+      var dup = state.files.some(function (it) {
+        return it.name === f.name && it.sizeBytes === f.size && it.lastModified === (f.lastModified || 0);
+      });
+      if (dup) { out.dup += 1; return; }
+      state.files.push(newItem(f));
+      out.added += 1;
+    });
+    if (out.added) { state.md = ''; }
+    emit('state');
+    return out;
+  }
+
+  /* ---------- 单文件主链路（方案 §8） ---------- */
+  function checkCancel(it) {
+    if (it.canceled || state.canceling) {
+      var e = U.err({ kind: 'abort', stage: 'queue', message: '已取消' });
+      throw e;
+    }
+  }
+
+  function fail(it, e) {
+    var err = (e && e.kind) ? e : U.err({
+      kind: 'unknown', stage: 'queue', message: (e && e.message) || '未知错误'
+    });
+    it.status = err.kind === 'abort' ? 'canceled' : 'failed';
+    it.error = err;
+    it.segments.forEach(function (s) { if (s.status !== 'done') { s.status = it.status === 'canceled' ? 'canceled' : 'failed'; } });
+    it.progress = 1;
+    log(it.name + '：' + err.message, 'err');
+  }
+
+  function processFile(it) {
+    if (it.canceled || state.canceling) {
+      it.status = 'canceled';
+      it.error = U.err({ kind: 'abort', stage: 'queue', message: '已取消' });
+      return Promise.resolve();
+    }
+    it.status = 'analyzing';
+    it.startedAt = U.now();
+    it.abort = new AbortController();
+    it.progress = 0.02;
+    emit('state');
+    log('开始处理：' + it.name);
+
+    return ns.AudioEngine.analyze(it.file).then(function (a) {
+      checkCancel(it);
+      if (!a.decodable) {
+        it.status = 'unsupported';
+        it.durationSec = null;
+        it.progress = 1;
+        it.error = U.err({ kind: 'unsupported', stage: 'analyze', message: '浏览器不支持该编码，请先转为 mp3/wav' });
+        log(it.name + '：' + it.error.message, 'warn');
+        return;
+      }
+      it.durationSec = a.duration;
+      if (a.warning) { log(it.name + '：' + a.warning, 'warn'); }
+      it.progress = 0.1;
+      emit('state');
+
+      var direct = (a.ext === 'wav' || a.ext === 'mp3') &&
+        a.duration > 0 && a.duration <= C.TARGET_SEC && a.b64Estimate <= C.SAFE_B64;
+      if (direct) { return runDirect(it, a); }
+      return runTranscoded(it);
+    }).catch(function (e) {
+      fail(it, e);
+    }).then(function () {
+      it.abort = null;
+      emit('state');
+      emit('file-done', it);
+      if (it.removeAfter) { removeNow(it); }
+    });
+  }
+
+  function runDirect(it, a) {
+    it.mode = 'direct';
+    it.segmentCount = 1;
+    it.status = 'running';
+    it.progress = 0.3;
+    var seg = makeSeg(1, 0, a.duration, false);
+    seg.status = 'pending';
+    it.segments = [seg];
+    emit('state');
+
+    return it.file.arrayBuffer().then(function (buf) {
+      checkCancel(it);
+      var b64 = ns.AudioEngine.toBase64(new Uint8Array(buf));
+      if (b64.length > C.SAFE_B64) {
+        /* 防御：前置判定已覆盖，仍超限则退回转码切片 */
+        return runTranscoded(it);
+      }
+      return transcribeOne(it, null, seg, {
+        b64: b64,
+        seconds: a.duration,
+        mime: C.MIME_BY_EXT[a.ext] || 'audio/wav'
+      }).then(function () {
+        summarize(it);
+      });
+    });
+  }
+
+  function runTranscoded(it) {
+    it.status = 'running';
+    it.progress = 0.15;
+    emit('state');
+    var pcmRef = null;
+    return ns.AudioEngine.decodeToMono16k(it.file).then(function (dec) {
+      checkCancel(it);
+      pcmRef = dec.pcm;
+      it.durationSec = dec.duration;
+      it.progress = 0.25;
+      emit('state');
+      return ns.AudioEngine.slice(pcmRef, dec.duration, { silence: settings.silenceSlice });
+    }).then(function (plan) {
+      checkCancel(it);
+      it.segmentCount = plan.segments.length;
+      it.mode = plan.segments.length > 1 ? 'sliced' : 'transcoded';
+      it.degraded = !!plan.degraded;
+      it.overlapSec = plan.overlapSec || 0;
+      it.segments = plan.segments.map(function (sd) {
+        var s = makeSegFrom(sd);
+        s.status = 'pending';
+        return s;
+      });
+      log(it.name + '：分 ' + it.segmentCount + ' 段' + (plan.degraded ? '（含降级切点）' : ''));
+      emit('state');
+      if (plan.degraded) { log(it.name + '：未找到合格静音谷，已用最安静点并在段间加重叠', 'warn'); }
+      return runSegments(it, pcmRef);
+    }).then(function () {
+      pcmRef = null;
+      summarize(it);
+    }, function (e) {
+      pcmRef = null;
+      throw e;
+    });
+  }
+
+  function runSegments(it, pcm) {
+    var jobs = it.segments.filter(function (s) { return s.status !== 'done'; }).map(function (seg) {
+      return pool.run(function () {
+        if (it.canceled || state.canceling) { seg.status = 'canceled'; return; }
+        return transcribeOne(it, pcm, seg);
+      }).catch(function () { /* 单段失败已在 transcribeOne 内记录 */ });
+    });
+    return Promise.all(jobs);
+  }
+
+  function transcribeOne(it, pcm, seg, direct) {
+    if (seg.status === 'done') { return Promise.resolve(); }
+    if (it.canceled || state.canceling) {
+      seg.status = 'canceled';
+      return Promise.resolve();
+    }
+    var enc = direct;
+    if (!enc) {
+      seg.status = 'encoding';
+      emit('state');
+      try {
+        enc = ns.AudioEngine.encodeSegment(pcm, seg);
+      } catch (e) {
+        if (e && e.kind === 'slice' && !seg.bisected) {
+          return bisect(it, pcm, seg, '切片超限');
+        }
+        seg.status = 'failed';
+        seg.error = (e && e.kind) ? e : U.err({ kind: 'encode', stage: 'encode', message: '编码失败' });
+        return Promise.resolve();
+      }
+    }
+    seg.status = 'requesting';
+    emit('state');
+    var secs = enc.seconds;
+    log(it.name + ' 第 ' + seg.index + '/' + it.segmentCount + ' 段：请求中（' + fmtSec(secs) + '）');
+
+    return ns.ApiClient.transcribe({
+      b64: enc.b64,
+      mime: enc.mime || 'audio/wav',
+      lang: settings.lang,
+      stream: settings.stream,
+      signal: it.abort ? it.abort.signal : new AbortController().signal,
+      onDelta: function () { /* 最终文本以返回值为准；预览不做逐字刷新，避免频繁重排 */ }
+    }).then(function (r) {
+      seg.status = 'done';
+      seg.text = r.text;
+      seg.seconds = r.seconds == null ? secs : r.seconds;
+      seg.finishReason = r.finishReason || null;
+      seg.raw = r.raw || null;
+      it.doneCount = it.segments.filter(function (s) { return s.status === 'done'; }).length;
+      it.progress = 0.3 + 0.7 * (it.doneCount / Math.max(1, it.segmentCount));
+      emit('state');
+      emit('progress', it);
+      log(it.name + ' 第 ' + seg.index + ' 段：完成');
+    }, function (e) {
+      if (e && e.kind === 'abort') {
+        seg.status = 'canceled';
+        return;
+      }
+      if (e && e.kind === 'truncated' && !seg.bisected) {
+        return bisectOrFromFile(it, pcm, seg, '输出截断');
+      }
+      /* 400 单靠“再发一次”无意义；按方案 §9 先重切一次，仍 400 才落失败 */
+      if (e && e.kind === 'http' && e.httpStatus === 400 && !seg.bisected) {
+        return bisectOrFromFile(it, pcm, seg, '服务端 400');
+      }
+      seg.status = 'failed';
+      seg.error = e;
+      log(it.name + ' 第 ' + seg.index + ' 段失败：' + ((e && e.message) || '未知错误'), 'err');
+    });
+  }
+
+  /* 直传段无 PCM，二分前必须先转码，否则会把 44 B 空 WAV 当半段发出 */
+  function bisectOrFromFile(it, pcm, seg, why) {
+    if (pcm) { return bisect(it, pcm, seg, why); }
+    log(it.name + ' 第 ' + seg.index + ' 段：' + why + '，先转码再二分重试', 'warn');
+    return ns.AudioEngine.decodeToMono16k(it.file).then(function (dec) {
+      checkCancel(it);
+      /* 已实际转码重切，报告不能再写「直传」 */
+      if (it.mode === 'direct') { it.mode = 'transcoded'; }
+      return bisect(it, dec.pcm, seg, why);
+    }).catch(function (e) {
+      if (e && e.kind === 'abort') {
+        seg.status = 'canceled';
+        return;
+      }
+      seg.status = 'failed';
+      seg.error = (e && e.kind) ? e : U.err({ kind: 'decode', stage: 'decode', message: '二分重切失败' });
+      log(it.name + ' 第 ' + seg.index + ' 段：二分重切失败（' + seg.error.message + '）', 'err');
+    });
+  }
+
+  /* 截断/超限时二分重切一次（方案 §9） */
+  function bisect(it, pcm, seg, why) {
+    seg.bisected = true;
+    log(it.name + ' 第 ' + seg.index + ' 段：' + why + '，自动二分重试', 'warn');
+    var mid = seg.start + (seg.end - seg.start) / 2;
+    var midSample = Math.round(mid * C.SAMPLE_RATE);
+    var halfA = makeSeg(seg.index, seg.start, mid, seg.degraded);
+    var halfB = makeSeg(seg.index, mid, seg.end, seg.degraded);
+    halfA.startSample = seg.startSample;
+    halfA.endSample = midSample;
+    halfB.startSample = midSample;
+    halfB.endSample = seg.endSample;
+    halfA.status = halfB.status = 'pending';
+    /* §9 只允许二分一次；半段再失败直接落失败，避免请求翻倍 */
+    halfA.bisected = halfB.bisected = true;
+    seg.halves = [halfA, halfB];
+
+    return transcribeOne(it, pcm, halfA).then(function () {
+      return transcribeOne(it, pcm, halfB);
+    }).then(function () {
+      var okA = halfA.status === 'done', okB = halfB.status === 'done';
+      if (okA && okB) {
+        seg.status = 'done';
+        seg.text = halfA.text + halfB.text;
+        seg.seconds = (halfA.seconds || 0) + (halfB.seconds || 0);
+      } else if (okA || okB) {
+        seg.status = 'failed';
+        seg.partial = true;
+        seg.text = (okA ? halfA.text : '') + (okB ? halfB.text : '');
+        seg.seconds = (halfA.seconds || 0) + (halfB.seconds || 0);
+        seg.error = U.err({ kind: 'truncated', stage: 'parse', message: '重启后仍有一段失败，结果可能不完整' });
+      } else {
+        seg.status = halfA.status === 'canceled' || halfB.status === 'canceled' ? 'canceled' : 'failed';
+        seg.error = halfA.error || halfB.error || null;
+      }
+    });
+  }
+
+  function summarize(it) {
+    var done = [], failed = [], canceled = [];
+    it.segments.forEach(function (s) {
+      if (s.status === 'done') { done.push(s); }
+      else if (s.status === 'canceled') { canceled.push(s); }
+      else { failed.push(s); }
+    });
+    it.doneCount = done.length;
+    it.failedSegments = failed.map(function (s) { return s.index; });
+    /* 半段成功也要保留正文 */
+    var textSegs = it.segments.filter(function (s) { return s.status === 'done' || (s.partial && s.text); });
+    it.text = textSegs.sort(function (a, b) { return a.index - b.index; }).map(function (s) { return s.text; }).join('\n\n');
+    it.seconds = it.segments.reduce(function (n, s) {
+      return n + ((s.status === 'done' || s.partial) ? (s.seconds || 0) : 0);
+    }, 0);
+    it.elapsedMs = it.startedAt ? (U.now() - it.startedAt) : 0;
+    it.progress = 1;
+    if (canceled.length) {
+      it.status = 'canceled';
+      it.error = it.error || U.err({ kind: 'abort', stage: 'queue', message: '已取消' });
+    } else if (failed.length) {
+      it.status = done.length ? 'partial' : 'failed';
+      it.error = it.error || (failed[0] && failed[0].error) || U.err({ kind: 'unknown', stage: 'queue', message: '转写失败' });
+    } else {
+      it.status = 'success';
+      it.error = null;
+    }
+  }
+
+  /* ---------- 队列对外 ---------- */
+  function start() {
+    if (state.running) { return; }
+    var pending = state.files.filter(function (it) { return it.status === 'pending'; });
+    if (!pending.length) { toast('没有待处理的文件'); return; }
+    if (!ns.ApiClient.hasKey()) { toast('请先配置 API Key'); inputEl('keyInput').focus(); return; }
+    state.running = true;
+    state.canceling = false;
+    emit('state');
+    log('开始转写：' + pending.length + ' 个文件');
+
+    var chain = Promise.resolve();
+    pending.forEach(function (it) {
+      it.inRun = true;
+      chain = chain.then(function () { return processFile(it); });
+    });
+    chain.then(function () {
+      pending.forEach(function (it) { it.inRun = false; });
+      state.running = false;
+      state.canceling = false;
+      emit('state');
+      emit('all-done');
+      log('本轮结束');
+    }, function (e) {
+      pending.forEach(function (it) { it.inRun = false; });
+      state.running = false;
+      state.canceling = false;
+      emit('state');
+      emit('all-done');
+      log('队列异常：' + ((e && e.message) || '未知错误'), 'err');
+    });
+  }
+
+  function cancel() {
+    if (!state.running) { return; }
+    state.canceling = true;
+    state.files.forEach(function (it) {
+      /* 只取消本轮未完成项；新加文件与成功项都不置 canceled */
+      if (!it.inRun || finishedStatus(it.status)) { return; }
+      it.canceled = true;
+      if (it.abort) { it.abort.abort(); }
+    });
+    log('已取消：在飞请求中断，已完成结果保留', 'warn');
+    emit('state');
+  }
+
+  function retry(id) {
+    if (state.running) { toast('请等待当前任务结束'); return; }
+    var it = findItem(id);
+    if (!it) { return; }
+    if (it.status === 'unsupported') { toast('该格式不支持，请先转为 mp3/wav'); return; }
+    /* 门槛失败重试会跳过 analyze 直接解码，有 OOM 风险且违反 §4 */
+    if (it.error && it.error.kind === 'limit') { toast('该文件超出处理门槛，请先切分后再添加'); return; }
+    if (it.status !== 'failed' && it.status !== 'partial' && it.status !== 'canceled') { return; }
+    if (!ns.ApiClient.hasKey()) { toast('请先配置 API Key'); return; }
+
+    var doneMap = {};
+    it.segments.forEach(function (s) {
+      if (s.status === 'done') { doneMap[s.index] = { text: s.text, seconds: s.seconds }; }
+    });
+    it.canceled = false;
+    it.error = null;
+    it.status = 'running';
+    it.progress = 0.1;
+    it.startedAt = U.now();
+    it.abort = new AbortController();
+    it.inRun = true;
+    state.running = true;
+    state.canceling = false;
+    emit('state');
+    log('重试：' + it.name + '（仅失败/未完成段）');
+
+    var p;
+    if (it.mode === 'direct') {
+      p = retryDirect(it);
+    } else {
+      p = retrySliced(it, doneMap);
+    }
+    p.then(function () {
+      summarize(it);
+      emit('state');
+      emit('file-done', it);
+    }, function (e) {
+      fail(it, e);
+    }).then(function () {
+      state.running = false;
+      it.inRun = false;
+      it.abort = null;
+      it.progress = 1;
+      emit('state');
+      emit('all-done');
+      log('重试结束：' + it.name);
+    });
+  }
+
+  function retryDirect(it) {
+    var seg = it.segments[0];
+    seg.status = 'pending';
+    seg.text = '';
+    seg.seconds = 0;
+    seg.error = null;
+    seg.bisected = false;
+    seg.partial = false;
+    seg.halves = null;
+    return it.file.arrayBuffer().then(function (buf) {
+      checkCancel(it);
+      return transcribeOne(it, null, seg, {
+        b64: ns.AudioEngine.toBase64(new Uint8Array(buf)),
+        seconds: it.durationSec,
+        mime: C.MIME_BY_EXT[U.extOf(it.name)] || 'audio/wav'
+      });
+    });
+  }
+
+  function retrySliced(it, doneMap) {
+    var pcmRef = null;
+    return ns.AudioEngine.decodeToMono16k(it.file).then(function (dec) {
+      checkCancel(it);
+      pcmRef = dec.pcm;
+      return ns.AudioEngine.slice(pcmRef, dec.duration, { silence: settings.silenceSlice });
+    }).then(function (plan) {
+      checkCancel(it);
+      it.segmentCount = plan.segments.length;
+      it.durationSec = pcmRef.length / C.SAMPLE_RATE;
+      it.segments = plan.segments.map(function (sd) {
+        var s = makeSegFrom(sd);
+        s.status = 'pending';
+        if (doneMap[sd.index]) {
+          s.status = 'done';
+          s.text = doneMap[sd.index].text;
+          s.seconds = doneMap[sd.index].seconds;
+        }
+        return s;
+      });
+      emit('state');
+      return runSegments(it, pcmRef);
+    }).then(function () {
+      pcmRef = null;
+    }, function (e) {
+      pcmRef = null;
+      throw e;
+    });
+  }
+
+  function removeNow(it) {
+    var i = state.files.indexOf(it);
+    if (i >= 0) { state.files.splice(i, 1); }
+    state.md = '';
+    emit('state');
+  }
+
+  function remove(id) {
+    var it = findItem(id);
+    if (!it) { return; }
+    if (it.status === 'running' || it.status === 'analyzing') {
+      it.canceled = true;
+      it.removeAfter = true;
+      if (it.abort) { it.abort.abort(); }
+      toast('已中止并移除');
+    } else {
+      removeNow(it);
+    }
+  }
+
+  function reset() {
+    if (state.running) { return false; }
+    state.files = [];
+    state.md = '';
+    state.canceling = false;
+    emit('state');
+    return true;
+  }
+
+  function resultsForExport() {
+    return state.files.filter(function (it) { return finishedStatus(it.status); }).map(function (it) {
+      return {
+        name: it.name,
+        sizeBytes: it.sizeBytes,
+        status: it.status,
+        durationSec: it.durationSec,
+        mode: it.mode,
+        segmentCount: it.segmentCount,
+        doneCount: it.doneCount,
+        failedSegments: it.failedSegments,
+        degraded: it.degraded,
+        overlapSec: it.overlapSec,
+        text: it.text,
+        seconds: it.seconds,
+        elapsedMs: it.elapsedMs,
+        error: it.error
+      };
+    });
+  }
+
+  function buildMd() {
+    var results = resultsForExport();
+    var md = '';
+    if (results.length) {
+      md = ns.Render.buildMarkdown(results, {
+        model: settings.model,
+        lang: settings.lang,
+        pricePerHour: settings.pricePerHour,
+        showMeta: settings.showMeta,
+        protectOriginal: settings.protectOriginal,
+        bom: settings.bom,
+        generatedAt: new Date()
+      });
+    }
+    /* 预览与导出同源，整体过 redact，防止正文回显 key（红线一） */
+    if (md) { md = ns.ApiClient.redact(md); }
+    state.md = md;
+    return md;
+  }
+
+  ns.Queue = {
+    on: on,
+    addFiles: addFiles,
+    start: start,
+    cancel: cancel,
+    retry: retry,
+    remove: remove,
+    reset: reset,
+    getFiles: function () { return state.files.slice(); },
+    isRunning: function () { return state.running; },
+    buildMarkdown: buildMd
+  };
+
+  /* ---------- UI ---------- */
+  function inputEl(id) { return document.getElementById(id); }
+  function btn(id) { return document.getElementById(id); }
+  function fmtSec(s) { return ns.Render.formatDuration(s || 0); }
+  function fmtSize(b) { return ns.Render.formatSize(b || 0); }
+
+  var logEl, toastEl, toastTimer = 0;
+  function log(msg, level) {
+    var text = ns.ApiClient.redact(String(msg == null ? '' : msg));
+    if (!logEl) { return; }
+    var d = document.createElement('div');
+    var t = document.createElement('span');
+    t.className = 't';
+    t.textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    d.appendChild(t);
+    d.appendChild(document.createTextNode(text));
+    if (level === 'err') { d.style.color = 'var(--err)'; }
+    if (level === 'warn') { d.style.color = 'var(--warn)'; }
+    logEl.appendChild(d);
+    while (logEl.children.length > 300) { logEl.removeChild(logEl.firstChild); }
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function toast(msg) {
+    if (!toastEl) { return; }
+    toastEl.textContent = ns.ApiClient.redact(String(msg || ''));
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 2600);
+  }
+
+  function statusInfo(it) {
+    if (it.status === 'pending') { return { text: '等待', cls: '' }; }
+    if (it.status === 'analyzing') { return { text: '分析中…', cls: 'run' }; }
+    if (it.status === 'running') {
+      var pct = Math.round((it.progress || 0) * 100);
+      return { text: '转写中 ' + pct + '%', cls: 'run' };
+    }
+    if (it.status === 'success') {
+      return { text: '✅ 完成 ' + (it.elapsedMs / 1000).toFixed(1) + 's', cls: 'ok' };
+    }
+    if (it.status === 'partial') {
+      return { text: '⚠ 部分失败（缺第 ' + it.failedSegments.join('、') + ' 段）', cls: 'warn' };
+    }
+    if (it.status === 'failed') {
+      return { text: '✖ 失败', cls: 'err' };
+    }
+    if (it.status === 'canceled') {
+      return { text: '⏹ 已取消', cls: 'warn' };
+    }
+    if (it.status === 'unsupported') {
+      return { text: '⚠ 不支持', cls: 'warn' };
+    }
+    return { text: it.status, cls: '' };
+  }
+
+  function modeText(it) {
+    if (it.mode === 'direct') { return '直传'; }
+    if (it.mode === 'transcoded') { return '转单声道'; }
+    if (it.mode === 'sliced') { return '转单声道 → 切 ' + it.segmentCount + ' 段'; }
+    return '—';
+  }
+
+  function render() {
+    if (!document.getElementById('fileBody')) { return; }
+    var body = document.getElementById('fileBody');
+    body.textContent = '';
+    state.files.forEach(function (it, i) {
+      var tr = document.createElement('tr');
+
+      var c0 = document.createElement('td');
+      c0.className = 'num';
+      c0.textContent = String(i + 1);
+      tr.appendChild(c0);
+
+      var c1 = document.createElement('td');
+      c1.className = 'name';
+      c1.textContent = it.name;
+      c1.title = it.name;
+      tr.appendChild(c1);
+
+      var c2 = document.createElement('td');
+      c2.className = 'num';
+      c2.textContent = fmtSize(it.sizeBytes);
+      tr.appendChild(c2);
+
+      var c3 = document.createElement('td');
+      c3.className = 'num';
+      c3.textContent = it.durationSec != null ? fmtSec(it.durationSec) : '—';
+      tr.appendChild(c3);
+
+      var c4 = document.createElement('td');
+      c4.textContent = modeText(it);
+      tr.appendChild(c4);
+
+      var c5 = document.createElement('td');
+      var st = statusInfo(it);
+      var span = document.createElement('span');
+      span.className = 'st ' + st.cls;
+      span.textContent = st.text;
+      c5.appendChild(span);
+      if (it.error && (it.status === 'failed' || it.status === 'partial' || it.status === 'unsupported')) {
+        span.title = it.error.message;
+      }
+      if (it.status === 'running') {
+        var bar = document.createElement('div');
+        bar.className = 'bar';
+        var fill = document.createElement('i');
+        fill.style.width = Math.round((it.progress || 0) * 100) + '%';
+        bar.appendChild(fill);
+        c5.appendChild(bar);
+      }
+      tr.appendChild(c5);
+
+      var c6 = document.createElement('td');
+      c6.className = 'ops';
+      var hasRaw = it.segments.some(function (s) {
+        return s.raw || (s.halves && s.halves.some(function (h) { return h.raw; }));
+      });
+      if (hasRaw) {
+        var jb = document.createElement('button');
+        jb.className = 'ghost small';
+        jb.textContent = 'JSON';
+        jb.title = '查看原始响应（已脱敏）';
+        jb.onclick = function () { showRaw(it); };
+        c6.appendChild(jb);
+      }
+      if (it.status === 'failed' || it.status === 'partial' || it.status === 'canceled') {
+        var rb = document.createElement('button');
+        rb.className = 'ghost small';
+        rb.textContent = '重试';
+        rb.onclick = function () { retry(it.id); };
+        c6.appendChild(rb);
+      }
+      var xb = document.createElement('button');
+      xb.className = 'ghost small';
+      xb.textContent = '移除';
+      xb.disabled = it.removeAfter === true;
+      xb.onclick = function () { remove(it.id); };
+      c6.appendChild(xb);
+      tr.appendChild(c6);
+
+      body.appendChild(tr);
+    });
+    document.getElementById('emptyRow').hidden = state.files.length > 0;
+    updateButtons();
+  }
+
+  function updateButtons() {
+    var hasPending = state.files.some(function (it) { return it.status === 'pending'; });
+    var hasResult = state.files.some(function (it) { return finishedStatus(it.status); });
+    btn('btnStart').disabled = state.running || !hasPending || !ns.ApiClient.hasKey();
+    btn('btnCancel').disabled = !state.running;
+    btn('btnSave').disabled = !hasResult;
+    btn('btnCopy').disabled = !hasResult;
+    btn('btnPreview').disabled = false;
+  }
+
+  function syncKeyUI() {
+    var has = ns.ApiClient.hasKey();
+    var masked = btn('keyMasked');
+    var inp = btn('keyInput');
+    var dot = btn('keyState');
+    if (has) {
+      masked.textContent = ns.ApiClient.keyMask() || '已配置';
+      masked.hidden = false;
+      inp.hidden = true;
+      btn('btnKeySave').hidden = true;
+      btn('btnKeyChange').hidden = false;
+      btn('btnKeyShow').hidden = false;
+      dot.textContent = '● 就绪';
+      dot.className = 'dot ok';
+    } else {
+      masked.hidden = true;
+      inp.hidden = false;
+      inp.type = 'password';
+      inp.value = '';
+      btn('btnKeySave').hidden = false;
+      btn('btnKeyChange').hidden = true;
+      btn('btnKeyShow').hidden = true;
+      dot.textContent = '○ 未配置';
+      dot.className = 'dot';
+    }
+    updateButtons();
+  }
+
+  function hideKey() {
+    btn('keyInput').value = '';
+    btn('keyInput').type = 'password';
+    btn('btnKeyShow').disabled = false;
+    /* 统一走 syncKeyUI：显示 3 秒期间点过「更换」时不能翻出掩码 */
+    syncKeyUI();
+  }
+
+  function showKey3s() {
+    var k = ns.ApiClient.peekKey();
+    if (!k) { return; }
+    var inp = btn('keyInput');
+    btn('keyMasked').hidden = true;
+    inp.hidden = false;
+    inp.type = 'text';
+    inp.value = k;
+    btn('btnKeyShow').disabled = true;
+    clearTimeout(showTimer);
+    showTimer = setTimeout(hideKey, 3000);
+  }
+
+  function saveKey() {
+    var r = ns.ApiClient.setKey(btn('keyInput').value);
+    btn('keyInput').value = '';
+    if (!r.ok) { toast(r.warning || '请输入 API Key'); btn('keyInput').focus(); return; }
+    if (r.warning) { toast(r.warning); }
+    hideKeyTemporarily();
+    syncKeyUI();
+    log('API Key 已配置（已脱敏）');
+  }
+
+  function hideKeyTemporarily() {
+    btn('keyMasked').hidden = false;
+    btn('keyInput').hidden = true;
+  }
+
+  function changeKey() {
+    clearTimeout(showTimer);
+    ns.ApiClient.clearKey();
+    syncKeyUI();
+    btn('keyInput').focus();
+    log('已清除内存中的 API Key');
+  }
+
+  function syncSettingsToInputs() {
+    btn('setBaseUrl').value = settings.baseUrl;
+    btn('setModel').value = settings.model;
+    btn('setPrice').value = settings.pricePerHour;
+    btn('setShowMeta').checked = !!settings.showMeta;
+    btn('setBom').checked = !!settings.bom;
+    btn('optLang').value = settings.lang;
+    btn('optConcurrency').value = settings.concurrency;
+    btn('optStream').checked = !!settings.stream;
+    btn('optSilence').checked = !!settings.silenceSlice;
+    btn('optProtect').checked = !!settings.protectOriginal;
+    document.getElementById('baseUrlText').textContent = settings.baseUrl;
+    document.getElementById('optConcurrency').min = String(C.CONCURRENCY_MIN);
+    document.getElementById('optConcurrency').max = String(C.CONCURRENCY_MAX);
+  }
+
+  function persist() {
+    ns.ApiClient.setEndpoint({ baseUrl: settings.baseUrl, model: settings.model });
+    document.getElementById('baseUrlText').textContent = settings.baseUrl;
+    var r = ns.Config.saveSettings(settings);
+    if (!r.ok && !settingsWarned) {
+      settingsWarned = true;
+      toast('设置无法写入本地存储，本次有效');
+    }
+    pool.setLimit(settings.concurrency);
+  }
+
+  function bindCommonSettings() {
+    btn('optLang').onchange = function () { settings.lang = this.value; persist(); };
+    btn('optConcurrency').onchange = function () {
+      var n = parseInt(this.value, 10);
+      if (!isFinite(n)) { n = C.CONCURRENCY_DEFAULT; }
+      settings.concurrency = U.clamp(n, C.CONCURRENCY_MIN, C.CONCURRENCY_MAX);
+      this.value = settings.concurrency;
+      persist();
+    };
+    btn('optStream').onchange = function () { settings.stream = this.checked; persist(); };
+    btn('optSilence').onchange = function () { settings.silenceSlice = this.checked; persist(); };
+    btn('optProtect').onchange = function () { settings.protectOriginal = this.checked; persist(); };
+  }
+
+  function panelToggle(panelId, buttonId) {
+    var p = btn(panelId), b = btn(buttonId);
+    b.onclick = function () {
+      p.hidden = !p.hidden;
+      b.setAttribute('aria-expanded', p.hidden ? 'false' : 'true');
+    };
+  }
+
+  function collectFromDataTransfer(dt) {
+    var items = dt.items;
+    if (!items || !items.length || !items[0].webkitGetAsEntry) {
+      return Promise.resolve(dt.files || []);
+    }
+    var roots = [];
+    for (var i = 0; i < items.length; i += 1) {
+      var e = items[i].webkitGetAsEntry ? items[i].webkitGetAsEntry() : null;
+      if (e) { roots.push(e); }
+    }
+    if (!roots.length) { return Promise.resolve(dt.files || []); }
+    var out = [];
+    function walk(entry) {
+      return new Promise(function (resolve) {
+        if (entry.isFile) {
+          entry.file(function (f) { out.push(f); resolve(); }, function () { resolve(); });
+          return;
+        }
+        if (!entry.isDirectory) { resolve(); return; }
+        var reader = entry.createReader();
+        var acc = [];
+        (function readBatch() {
+          reader.readEntries(function (batch) {
+            if (!batch.length) {
+              Promise.all(acc.map(walk)).then(function () { resolve(); });
+              return;
+            }
+            acc = acc.concat(Array.prototype.slice.call(batch));
+            readBatch();
+          }, function () { resolve(); });
+        })();
+      });
+    }
+    return Promise.all(roots.map(walk)).then(function () { return out; });
+  }
+
+  function addAndReport(files) {
+    var r = addFiles(files);
+    var bits = [];
+    if (r.added) { bits.push('已添加 ' + r.added + ' 个'); }
+    if (r.dup) { bits.push('重复 ' + r.dup + ' 个已忽略'); }
+    if (r.ignored) { bits.push('非音频 ' + r.ignored + ' 个已忽略'); }
+    if (!bits.length) { bits.push('没有可添加的音频文件'); }
+    toast(bits.join('，'));
+    log(bits.join('，'));
+  }
+
+  function refreshPreview() {
+    var md = buildMd();
+    var pre = document.getElementById('preview');
+    pre.textContent = md || '（暂无内容）';
+    document.getElementById('previewInfo').textContent = md ? md.length + ' 字符' : '';
+  }
+
+  function saveMarkdown() {
+    var md = buildMd();
+    if (!md) { toast('没有可导出的内容'); return; }
+    var exported = state.files.filter(function (it) { return finishedStatus(it.status); });
+    var name = ns.Render.pickName(exported, btn('outName').value.trim());
+    /* 必须在同一调用栈内进入 Export，选择器才能在用户激活窗口内弹出（方案 §5.2） */
+    ns.Export.saveMarkdown(md, name).then(function (r) {
+      if (r && r.ok && r.mode === 'picker') { toast('已保存：' + r.name); log('已保存：' + r.name); }
+      else if (r && r.ok) { toast('已保存到浏览器下载文件夹'); log('已保存（下载）：' + r.name); }
+      else if (r && r.canceled) { toast('已取消保存，内容仍在预览区'); }
+      else { toast('保存失败：' + ((r && r.error && r.error.message) || '未知错误')); }
+    }).catch(function (e) {
+      toast('保存失败：' + ns.ApiClient.redact((e && e.message) || '未知错误'));
+    });
+  }
+
+  function copyMarkdown() {
+    var md = buildMd();
+    if (!md) { toast('没有可复制的内容'); return; }
+    ns.Export.copyText(md).then(function (r) {
+      toast(r.ok ? '已复制 Markdown 到剪贴板' : '复制失败，请用预览区手动复制');
+    });
+  }
+
+  function showRaw(it) {
+    var arr = [];
+    it.segments.forEach(function (s) {
+      if (s.raw) { arr.push({ segment: s.index, raw: s.raw }); }
+      (s.halves || []).forEach(function (h) {
+        if (h.raw) { arr.push({ segment: h.index, half: true, raw: h.raw }); }
+      });
+    });
+    if (!arr.length) { toast('暂无原始响应'); return; }
+    var payload = arr.length === 1 ? arr[0].raw : arr;
+    var txt;
+    try { txt = JSON.stringify(payload, null, 2); } catch (e) { txt = String(payload); }
+    document.getElementById('jsonTitle').textContent = '原始响应 JSON · ' + it.name;
+    document.getElementById('jsonBody').textContent = ns.ApiClient.redact(txt);
+    document.getElementById('jsonModal').hidden = false;
+  }
+
+  function closeRaw() {
+    document.getElementById('jsonModal').hidden = true;
+    document.getElementById('jsonBody').textContent = '';
+  }
+
+  function init() {
+    logEl = document.getElementById('log');
+    toastEl = document.getElementById('toast');
+    ns.ApiClient.setEndpoint({ baseUrl: settings.baseUrl, model: settings.model });
+    syncSettingsToInputs();
+    bindCommonSettings();
+
+    panelToggle('settingsPanel', 'btnSettings');
+    panelToggle('helpPanel', 'btnHelp');
+    btn('btnSaveSettings').onclick = function () {
+      var base = btn('setBaseUrl').value.trim();
+      if (!/^https?:\/\/[^\s]+$/i.test(base)) { toast('Base URL 需以 http:// 或 https:// 开头'); return; }
+      settings.baseUrl = base;
+      settings.model = btn('setModel').value.trim() || C.MODEL;
+      var price = Number(btn('setPrice').value);
+      settings.pricePerHour = (price > 0 && price < 1000) ? price : C.PRICE_PER_HOUR;
+      settings.showMeta = btn('setShowMeta').checked;
+      settings.bom = btn('setBom').checked;
+      persist();
+      bindCommonSettings();
+      btn('settingsHint').textContent = '已保存';
+      log('设置已更新（不含 Key）');
+    };
+    btn('btnResetSettings').onclick = function () {
+      settings = ns.Config.resetSettings();
+      ns.ApiClient.setEndpoint({ baseUrl: settings.baseUrl, model: settings.model });
+      syncSettingsToInputs();
+      bindCommonSettings();
+      persist();
+      log('设置已恢复默认');
+    };
+
+    btn('btnKeySave').onclick = saveKey;
+    btn('btnKeyChange').onclick = changeKey;
+    btn('btnKeyShow').onclick = showKey3s;
+    btn('keyInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); saveKey(); }
+    });
+
+    btn('btnPickFiles').onclick = function () { btn('fileInput').click(); };
+    btn('btnPickDir').onclick = function () { btn('dirInput').click(); };
+    btn('fileInput').onchange = function () {
+      var files = Array.prototype.slice.call(this.files || []);
+      this.value = '';
+      if (files.length) { addAndReport(files); }
+    };
+    btn('dirInput').onchange = function () {
+      var files = Array.prototype.slice.call(this.files || []);
+      this.value = '';
+      if (files.length) { addAndReport(files); }
+    };
+
+    var dz = document.getElementById('dropZone');
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove('over'); });
+    });
+    dz.addEventListener('drop', function (e) {
+      collectFromDataTransfer(e.dataTransfer).then(function (files) { addAndReport(files); });
+    });
+
+    btn('btnStart').onclick = start;
+    btn('btnCancel').onclick = cancel;
+    btn('btnPreview').onclick = function () {
+      var p = document.getElementById('previewPanel');
+      p.hidden = !p.hidden;
+      if (!p.hidden) { refreshPreview(); }
+    };
+    btn('btnSave').onclick = saveMarkdown;
+    btn('btnCopy').onclick = copyMarkdown;
+    btn('btnClearLog').onclick = function () { logEl.textContent = ''; };
+    btn('btnJsonClose').onclick = closeRaw;
+    document.getElementById('jsonModal').addEventListener('click', function (e) {
+      if (e.target === this) { closeRaw(); }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { closeRaw(); }
+    });
+
+    on('state', render);
+    on('state', function () { if (!document.getElementById('previewPanel').hidden) { refreshPreview(); } });
+    on('file-done', function () { state.md = ''; });
+
+    syncKeyUI();
+    render();
+    log('就绪：请配置 API Key 后添加音频');
+  }
+
+  ns.App = {
+    settings: function () { return settings; },
+    patchSettings: function (patch) {
+      Object.keys(patch || {}).forEach(function (k) { settings[k] = patch[k]; });
+      syncSettingsToInputs();
+      pool.setLimit(settings.concurrency);
+      emit('state');
+    },
+    render: render,
+    refreshPreview: refreshPreview,
+    syncKeyUI: syncKeyUI,
+    log: log,
+    toast: toast,
+    buildMarkdown: buildMd
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})(window.ASR2MD = window.ASR2MD || {});
+/* 内联测试桩：?mock=1 时注入假 key 与假网络，覆盖 方案 §11.2；正常模式无副作用。 */
+(function (ns) {
+  'use strict';
+
+  var C = ns.CONFIG, U = ns.Util;
+  var enabled = false;
+  try { enabled = new URLSearchParams(location.search).get('mock') === '1'; } catch (e) { enabled = false; }
+
+  var route = { mode: 'ok', text: '正常文本', seconds: 4, calls: 0 };
+  var installed = false;
+  var waiter = null;
+
+  function json(obj, status) {
+    return new Response(JSON.stringify(obj), {
+      status: status || 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+  function errResp(status, msg) {
+    return json({ error: { message: msg || 'mock error', param: '', code: String(status), type: 'mock' } }, status);
+  }
+  function okResp(text, seconds, finish) {
+    return json({
+      id: 'mock', object: 'chat.completion', model: C.MODEL,
+      choices: [{ index: 0, finish_reason: finish || 'stop', message: { role: 'assistant', content: text } }],
+      usage: { seconds: seconds }
+    });
+  }
+  function sseResp(deltas, seconds) {
+    var parts = deltas.map(function (d) {
+      return 'data: ' + JSON.stringify({ choices: [{ index: 0, delta: { content: d } }] }) + '\n\n';
+    });
+    if (seconds != null) {
+      parts.push('data: ' + JSON.stringify({ choices: [], usage: { seconds: seconds } }) + '\n\n');
+    }
+    parts.push('data: [DONE]\n\n');
+    return new Response(parts.join(''), {
+      status: 200,
+      headers: { 'Content-Type': 'text/event-stream' }
+    });
+  }
+
+  function transport() {
+    route.calls += 1;
+    if (route.mode === 'ok') { return Promise.resolve(okResp(route.text, route.seconds)); }
+    if (route.mode === 'stream') { return Promise.resolve(sseResp(['你', '好', '世界'], route.seconds)); }
+    if (route.mode === 'lengthOnce') {
+      return Promise.resolve(route.calls === 1
+        ? okResp('', route.seconds, 'length')
+        : okResp('二分' + route.calls, route.seconds));
+    }
+    if (route.mode === '400Once') {
+      return Promise.resolve(route.calls === 1
+        ? errResp(400, 'size too large')
+        : okResp('切后' + route.calls, route.seconds));
+    }
+    if (route.mode === 'empty') { return Promise.resolve(okResp('', route.seconds)); }
+    if (route.mode === 'flaky429') {
+      return Promise.resolve(route.calls <= 3 ? errResp(429, 'rate limited') : okResp(route.text, route.seconds));
+    }
+    if (route.mode === 'always429') { return Promise.resolve(errResp(429, 'rate limited')); }
+    if (route.mode === 'echoKey') {
+      return Promise.resolve(errResp(401, 'bad key ' + (ns.ApiClient.peekKey() || '')));
+    }
+    return Promise.resolve(errResp(Number(route.mode) || 400, 'mock error'));
+  }
+
+  function resetRoute(mode, text, seconds) {
+    route.mode = mode;
+    route.text = text || '正常文本';
+    route.seconds = seconds == null ? 4 : seconds;
+    route.calls = 0;
+  }
+
+  function assert(cond, msg) { if (!cond) { throw new Error(msg || '断言失败'); } }
+  function eq(actual, expected, msg) {
+    if (actual !== expected) { throw new Error((msg || '') + ' 期望 ' + expected + '，实际 ' + actual); }
+  }
+
+  /* ---------- 合成音频 ---------- */
+  function wavBuffer(seconds, gapSec) {
+    var sr = C.SAMPLE_RATE, n = Math.round(seconds * sr);
+    var buf = new ArrayBuffer(44 + n * 2), dv = new DataView(buf);
+    function tag(off, s) { for (var i = 0; i < s.length; i += 1) { dv.setUint8(off + i, s.charCodeAt(i)); } }
+    tag(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); tag(8, 'WAVE'); tag(12, 'fmt ');
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    tag(36, 'data'); dv.setUint32(40, n * 2, true);
+    for (var i = 0; i < n; i += 1) {
+      var t = i / sr, amp = 0.35;
+      if (gapSec) {
+        var ph = t % 1.8;
+        if (ph > 1.8 - gapSec / 2 || ph < gapSec / 2) { amp = 0.0004; }
+      }
+      var v = (Math.sin(2 * Math.PI * 337 * t) + 0.3 * Math.sin(2 * Math.PI * 911 * t)) * amp;
+      var s = Math.max(-32768, Math.min(32767, Math.round(v * 32767)));
+      dv.setInt16(44 + i * 2, s, true);
+    }
+    return buf;
+  }
+  function wavFile(seconds, name, gapSec) {
+    return new File([wavBuffer(seconds, gapSec)], name, {
+      type: 'audio/wav', lastModified: 1730000000000
+    });
+  }
+  function pcmFromWav(buf) {
+    var dv = new DataView(buf), n = (buf.byteLength - 44) / 2, p = new Float32Array(n);
+    for (var i = 0; i < n; i += 1) { p[i] = dv.getInt16(44 + i * 2, true) / 32768; }
+    return p;
+  }
+  function fakeFile(name, size, buf) {
+    return {
+      name: name, size: size, lastModified: 1, type: 'audio/wav',
+      arrayBuffer: function () { return Promise.resolve(buf); },
+      slice: function (a, b) {
+        return { arrayBuffer: function () { return Promise.resolve(buf.slice(a, b)); } };
+      }
+    };
+  }
+  /* 低采样率 8-bit WAV：用很小的文件长度声明超长时长，验证“时长门槛”而不必分配真实长音频。 */
+  function longWavFile(seconds) {
+    var byteRate = 800, dataBytes = seconds * byteRate, size = 44 + dataBytes;
+    var buf = new ArrayBuffer(size), dv = new DataView(buf);
+    function tag(off, s) { for (var i = 0; i < s.length; i += 1) { dv.setUint8(off + i, s.charCodeAt(i)); } }
+    tag(0, 'RIFF'); dv.setUint32(4, 36 + dataBytes, true); tag(8, 'WAVE'); tag(12, 'fmt ');
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, 800, true); dv.setUint32(28, byteRate, true);
+    dv.setUint16(32, 1, true); dv.setUint16(34, 8, true);
+    tag(36, 'data'); dv.setUint32(40, dataBytes, true);
+    return new File([buf], '超长.wav', { type: 'audio/wav', lastModified: 1730000000001 });
+  }
+
+  /* ---------- 队列等待 ---------- */
+  function queueRun(files) {
+    return new Promise(function (resolve, reject) {
+      var timer = setTimeout(function () {
+        if (waiter === resolve) { waiter = null; reject(new Error('队列等待超时')); }
+      }, 30000);
+      waiter = function () { clearTimeout(timer); resolve(); };
+      ns.Queue.reset();
+      ns.Queue.addFiles(files);
+      ns.Queue.start();
+    });
+  }
+  function withTimeout(p, ms) {
+    return new Promise(function (resolve, reject) {
+      var timer = setTimeout(function () { reject(new Error('用例超时')); }, ms || 600000);
+      Promise.resolve(p).then(function (v) { clearTimeout(timer); resolve(v); },
+        function (e) { clearTimeout(timer); reject(e); });
+    });
+  }
+  function tx(extra) {
+    var o = { b64: 'QUJD', mime: 'audio/wav', lang: 'auto', stream: false, signal: new AbortController().signal };
+    Object.keys(extra || {}).forEach(function (k) { o[k] = extra[k]; });
+    return ns.ApiClient.transcribe(o);
+  }
+  function fixtureResult() {
+    return {
+      name: '会议1.mp3', sizeBytes: 6500000, status: 'success', durationSec: 754,
+      mode: 'sliced', segmentCount: 5, doneCount: 5, failedSegments: [],
+      degraded: false, overlapSec: 0, text: '正文内容', seconds: 754,
+      elapsedMs: 38200, error: null
+    };
+  }
+  function mdMeta(extra) {
+    var m = {
+      model: C.MODEL, lang: 'zh', pricePerHour: 0.5, showMeta: true,
+      protectOriginal: true, bom: false, generatedAt: new Date(2026, 10, 25, 10, 35, 12)
+    };
+    Object.keys(extra || {}).forEach(function (k) { m[k] = extra[k]; });
+    return m;
+  }
+
+  /* ---------- 用例（编号对齐 方案 §11.2） ---------- */
+  var tests = [
+    {
+      id: '11', name: '正常响应 → 文本落入 md',
+      fn: function () {
+        resetRoute('ok', '第一段正常文本');
+        return queueRun([wavFile(12, '正常.wav')]).then(function () {
+          var it = ns.Queue.getFiles()[0];
+          eq(it.status, 'success', '文件状态');
+          assert(it.text.indexOf('第一段正常文本') >= 0, '正文缺失');
+          var md = ns.Queue.buildMarkdown();
+          assert(md.indexOf('正常.wav') >= 0 && md.indexOf('第一段正常文本') >= 0, 'md 缺少文件名或正文');
+        });
+      }
+    },
+    {
+      id: '12', name: '流式增量拼接，末帧 usage 不当内容',
+      fn: function () {
+        resetRoute('stream');
+        var deltas = [];
+        return tx({ stream: true, onDelta: function (d) { deltas.push(d); } }).then(function (r) {
+          eq(r.text, '你好世界', '流式文本');
+          eq(r.seconds, 4, 'usage.seconds');
+          eq(deltas.join(''), '你好世界', '增量拼接');
+        });
+      }
+    },
+    {
+      id: '13', name: 'finish_reason=length → 自动二分重切',
+      fn: function () {
+        resetRoute('lengthOnce');
+        return queueRun([wavFile(12, '截断.wav')]).then(function () {
+          var it = ns.Queue.getFiles()[0];
+          eq(it.status, 'success', '二分后状态');
+          assert(it.text.indexOf('二分2') >= 0 && it.text.indexOf('二分3') >= 0, '二分文本缺失');
+          eq(route.calls, 3, '请求次数');
+        });
+      }
+    },
+    {
+      id: '13b', name: '400 → 重切一次后恢复',
+      fn: function () {
+        resetRoute('400Once');
+        return queueRun([wavFile(12, '400一次.wav')]).then(function () {
+          var it = ns.Queue.getFiles()[0];
+          eq(it.status, 'success', '重切后状态');
+          assert(it.text.indexOf('切后2') >= 0 && it.text.indexOf('切后3') >= 0, '重切文本缺失');
+          eq(route.calls, 3, '请求次数');
+          eq(it.mode, 'transcoded', '报告口径已改为转码');
+        });
+      }
+    },
+    {
+      id: '13c', name: '持续 400 → 只重切一次并失败',
+      fn: function () {
+        resetRoute('400');
+        return queueRun([wavFile(12, '400持续.wav')]).then(function () {
+          var it = ns.Queue.getFiles()[0];
+          eq(it.status, 'failed', '状态');
+          eq(it.error && it.error.httpStatus, 400, 'httpStatus');
+          assert(it.error.message.indexOf('已重切仍失败') >= 0, '文案：' + it.error.message);
+          eq(route.calls, 3, '请求次数（不放大）');
+        });
+      }
+    },
+    {
+      id: '14', name: '401 / 402 / 421 文案正确且不重试',
+      fn: function () {
+        var cases = [[401, 'API Key 无效'], [402, '余额不足'], [421, '内容不可处理']];
+        return cases.reduce(function (p, c) {
+          return p.then(function () {
+            resetRoute(String(c[0]));
+            return tx().then(function () { throw new Error(c[0] + ' 未抛错'); }, function (e) {
+              eq(e.kind, 'http', c[0] + ' kind');
+              eq(e.httpStatus, c[0], c[0] + ' httpStatus');
+              assert(e.message.indexOf(c[1]) >= 0, c[0] + ' 文案：' + e.message);
+              eq(route.calls, 1, c[0] + ' 请求次数');
+            });
+          });
+        }, Promise.resolve());
+      }
+    },
+    {
+      id: '15', name: '429 三次退避后恢复；四次标记限流',
+      fn: function () {
+        resetRoute('flaky429', '限流后恢复');
+        return tx().then(function (r) {
+          eq(r.text, '限流后恢复', '恢复文本');
+          eq(route.calls, 4, '重试次数');
+          resetRoute('always429');
+          return tx().then(function () { throw new Error('持续 429 未抛错'); }, function (e) {
+            eq(route.calls, 4, '429 用尽请求次数');
+            assert(e.message.indexOf('限流') >= 0, '限流文案：' + e.message);
+          });
+        });
+      }
+    },
+    {
+      id: '16', name: '空文本 + usage.seconds>0 → 明确提示',
+      fn: function () {
+        resetRoute('empty');
+        return tx().then(function () { throw new Error('空文本未抛错'); }, function (e) {
+          eq(e.kind, 'empty', '错误类型');
+          assert(e.message.indexOf('未识别到有效语音') >= 0, '文案：' + e.message);
+        });
+      }
+    },
+    {
+      id: '17', name: '取消保存（AbortError）→ 静默且内容保留',
+      fn: function () {
+        var had = Object.prototype.hasOwnProperty.call(window, 'showSaveFilePicker');
+        var old = window.showSaveFilePicker;
+        var e = new Error('canceled');
+        e.name = 'AbortError';
+        window.showSaveFilePicker = function () { return Promise.reject(e); };
+        return ns.Export.saveMarkdown('保留的内容', '取消.md').then(function (r) {
+          assert(r && r.canceled === true && r.ok === false, '取消结果形状');
+          if (had) { window.showSaveFilePicker = old; } else { delete window.showSaveFilePicker; }
+        }, function (err) {
+          if (had) { window.showSaveFilePicker = old; } else { delete window.showSaveFilePicker; }
+          throw err;
+        });
+      }
+    },
+    {
+      id: '18', name: '超体积 / 超时长门槛 → 拒绝',
+      fn: function () {
+        var big = fakeFile('big.mp3', C.MAX_FILE_SIZE + 1, new ArrayBuffer(0));
+        return ns.AudioEngine.analyze(big).then(function () { throw new Error('超体积未拒绝'); }, function (e) {
+          eq(e.kind, 'limit', '超体积 kind');
+          return ns.AudioEngine.analyze(longWavFile(C.MAX_DURATION_SEC + 60)).then(function () {
+            throw new Error('超时长未拒绝');
+          }, function (e2) {
+            eq(e2.kind, 'limit', '超时长 kind');
+          });
+        });
+      }
+    },
+    {
+      id: '19', name: '关闭静音切片 → 硬切段数与体积符合断言',
+      fn: function () {
+        var pcm = pcmFromWav(wavBuffer(7.2, 0.4));
+        var scaled = { silence: false, targetSec: 1.8, windowMin: 1.72, windowMax: 1.88, hardMax: 2.1 };
+        return ns.AudioEngine.slice(pcm, 7.2, scaled).then(function (plan) {
+          eq(plan.segments.length, 4, '硬切段数');
+          plan.segments.forEach(function (seg) {
+            var len = seg.end - seg.start;
+            assert(Math.abs(len - 1.8) < 0.001, '段长 ' + len);
+            var enc = ns.AudioEngine.encodeSegment(pcm, seg);
+            assert(enc.b64.length <= C.SAFE_B64, '段 Base64 超限');
+            eq(enc.bytes, C.WAV_HEADER_BYTES + Math.round(1.8 * C.SAMPLE_RATE) * 2, '段字节数');
+          });
+          var quiet = pcmFromWav(wavBuffer(28.82, 0.4));
+          return ns.AudioEngine.slice(quiet, 28.82, {
+            silence: true, targetSec: 1.8, windowMin: 1.72, windowMax: 1.88, hardMax: 2.1
+          });
+        }).then(function (p2) {
+          eq(p2.segments.length, 16, '缩放档 2882s 等效段数');
+          var short = pcmFromWav(wavBuffer(2, 0));
+          return ns.AudioEngine.slice(short, 2, {
+            silence: true, targetSec: 1.8, windowMin: 1.72, windowMax: 1.88, hardMax: 2.1
+          });
+        }).then(function (p3) {
+          eq(p3.segments.length, 1, '收尾规则（剩余 ≤ hardMax 整段取完）');
+        });
+      }
+    },
+    {
+      id: '20', name: '关闭元信息 + BOM → 仅标题正文，BOM 生效',
+      fn: function () {
+        var md = ns.Render.buildMarkdown([fixtureResult()], mdMeta({ showMeta: false, bom: true }));
+        assert(md.charAt(0) === '\uFEFF', 'BOM 缺失');
+        assert(md.indexOf('生成时间') < 0, '仍含元信息');
+        assert(md.indexOf('- 大小：') < 0, '仍含大小行');
+        assert(md.indexOf('- 处理：') < 0, '仍含处理行');
+        assert(md.indexOf('- 状态：') < 0, '仍含状态行');
+        assert(md.indexOf('\n---') < 0, '仍含分隔线');
+        assert(md.indexOf('## 1.') >= 0, '章节缺失');
+        var bad = ns.Render.buildMarkdown([
+          { name: '坏.amr', sizeBytes: 1800000, status: 'unsupported', text: '',
+            error: { message: '浏览器无法解码 AMR，请先转为 MP3/WAV' } }
+        ], mdMeta({ showMeta: false }));
+        assert(bad.indexOf('该文件未能转写') >= 0, '关闭元信息后失败原因丢失');
+      }
+    },
+    {
+      id: '21', name: '同一文件重复添加 → 去重提示',
+      fn: function () {
+        ns.Queue.reset();
+        var f = wavFile(3, '重复.wav');
+        var r = ns.Queue.addFiles([f, f]);
+        eq(r.added, 1, '新增数');
+        eq(r.dup, 1, '重复数');
+        ns.Queue.reset();
+      }
+    },
+    {
+      id: '22', name: '超长无换行正文 → 按句切分且不改字',
+      fn: function () {
+        var raw = new Array(101).join('这是一句测试内容。');
+        var md = ns.Render.buildMarkdown([{
+          name: '长句.wav', sizeBytes: 1000, status: 'success', durationSec: 60,
+          mode: 'direct', segmentCount: 1, doneCount: 1, failedSegments: [],
+          degraded: false, overlapSec: 0, text: raw, seconds: 60, elapsedMs: 1000, error: null
+        }], mdMeta());
+        var lines = md.split('\n').filter(function (l) { return l.indexOf('这是一句') === 0; });
+        assert(lines.length > 1, '未切分');
+        lines.forEach(function (l) { assert(l.length <= 201, '行过长 ' + l.length); });
+        eq(lines.join(''), raw, '切分改动了文字');
+      }
+    },
+    {
+      id: '23', name: '.amr 不支持 → 不发请求、不计费',
+      fn: function () {
+        resetRoute('ok');
+        var f = new File([new Uint8Array([1, 2, 3, 4])], '录音.amr', { type: 'audio/amr', lastModified: 5 });
+        return queueRun([f]).then(function () {
+          var it = ns.Queue.getFiles()[0];
+          eq(it.status, 'unsupported', '文件状态');
+          eq(route.calls, 0, '网络请求次数');
+        });
+      }
+    },
+    {
+      id: 'D1', name: '浏览器真解码：16k 单声道 PCM 时长一致',
+      fn: function () {
+        return ns.AudioEngine.decodeToMono16k(wavFile(3, '解码.wav')).then(function (dec) {
+          assert(Math.abs(dec.duration - 3) < 0.02, 'duration=' + dec.duration);
+          assert(Math.abs(dec.pcm.length - 3 * C.SAMPLE_RATE) <= 64, 'pcm=' + dec.pcm.length);
+          assert(Math.abs(dec.duration * C.SAMPLE_RATE - dec.pcm.length) < 2, '时长与采样点数不一致');
+        });
+      }
+    },
+    {
+      id: 'S1', name: 'Key 脱敏：日志/错误不含明文',
+      fn: function () {
+        var k = ns.ApiClient.peekKey();
+        assert(k, '未注入测试 key');
+        var out = ns.ApiClient.redact('api-key: ' + k + ' / Bearer ' + k);
+        assert(out.indexOf(k) < 0, 'redact 未生效');
+        resetRoute('echoKey');
+        return tx().then(function () { throw new Error('回显 key 未抛错'); }, function (e) {
+          assert(e.message.indexOf(k) < 0, '错误信息含明文 key');
+        });
+      }
+    }
+  ];
+
+  /* ---------- 结果面板 ---------- */
+  function render(results, running) {
+    var root = document.getElementById('mockRoot');
+    if (!root) { return; }
+    root.hidden = false;
+    root.textContent = '';
+    var panel = document.createElement('section');
+    panel.className = 'panel';
+    var h = document.createElement('h2');
+    h.textContent = '内联自测（?mock=1）' + (running ? ' · 运行中…' : '');
+    panel.appendChild(h);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'mtable';
+    var table = document.createElement('table');
+    var thead = document.createElement('thead');
+    var htr = document.createElement('tr');
+    ['#', '用例', '结果', '详情'].forEach(function (t) {
+      var th = document.createElement('th');
+      th.textContent = t;
+      htr.appendChild(th);
+    });
+    thead.appendChild(htr);
+    table.appendChild(thead);
+    var tb = document.createElement('tbody');
+    results.forEach(function (r) {
+      var tr = document.createElement('tr');
+      var c0 = document.createElement('td'); c0.textContent = r.id;
+      var c1 = document.createElement('td'); c1.textContent = r.name;
+      var c2 = document.createElement('td');
+      var sp = document.createElement('span');
+      sp.className = r.status;
+      sp.textContent = r.status;
+      c2.appendChild(sp);
+      var c3 = document.createElement('td'); c3.textContent = r.detail || '';
+      [c0, c1, c2, c3].forEach(function (c) { tr.appendChild(c); });
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    wrap.appendChild(table);
+    panel.appendChild(wrap);
+
+    var sum = document.createElement('p');
+    sum.className = 'hint';
+    var pass = results.filter(function (r) { return r.status === 'pass'; }).length;
+    var fail = results.filter(function (r) { return r.status === 'fail'; }).length;
+    sum.textContent = '通过 ' + pass + ' / 失败 ' + fail + ' / 共 ' + tests.length + ' 项';
+    panel.appendChild(sum);
+    root.appendChild(panel);
+  }
+
+  function run() {
+    var out = [];
+    render(out, true);
+    return tests.reduce(function (p, t) {
+      return p.then(function () {
+        return withTimeout(Promise.resolve().then(t.fn), 600000).then(function () {
+          out.push({ id: t.id, name: t.name, status: 'pass', detail: '' });
+        }, function (e) {
+          out.push({ id: t.id, name: t.name, status: 'fail', detail: (e && e.message) || String(e) });
+        }).then(function () {
+          render(out, true);
+        });
+      });
+    }, Promise.resolve()).then(function () {
+      render(out, false);
+      return out;
+    });
+  }
+
+  function install() {
+    if (installed) { return; }
+    installed = true;
+    ns.ApiClient.setKey('FAKE_KEY_TEST_0000');
+    ns.ApiClient.setTransport(transport);
+    ns.App.patchSettings({
+      lang: 'auto', concurrency: 3, stream: false,
+      silenceSlice: true, showMeta: true, bom: false, protectOriginal: true
+    });
+    ns.App.syncKeyUI();
+    ns.Queue.on('all-done', function () {
+      var w = waiter;
+      waiter = null;
+      if (w) { w(); }
+    });
+    ns.App.log('mock 模式：已注入内联测试桩（凭证 FAKE_KEY_TEST_0000）', 'warn');
+  }
+
+  ns.Mock = { enabled: enabled, install: install, run: run };
+
+  if (enabled) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { install(); run(); });
+    } else {
+      install();
+      run();
+    }
+  }
+})(window.ASR2MD = window.ASR2MD || {});
+</script>
+</body>
+</html>
