@@ -1,0 +1,21 @@
+# 构建与测试中间产物（交付前必须删除）
+/build/
+/fixtures/
+/output/
+/raw/
+
+# 本地密钥与环境变量（严禁入库）
+*.key
+.env
+.env.*
+secrets.*
+
+# 日志
+*.log
+
+# 编辑器与系统文件
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
