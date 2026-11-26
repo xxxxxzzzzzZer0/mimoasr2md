@@ -6,17 +6,18 @@ A single-file web tool: open it in a browser by double-clicking, pick a few reco
 
 > The single source of truth for the spec and hard parameters is [`docs/方案.md`](docs/方案.md) (written in Chinese). This file only covers *how to use* the tool; every concrete value (audio format, size and duration thresholds, segment length, concurrency, retry and backoff) is defined in §4 of that document and is deliberately not repeated here.
 >
-> **Status: v2.5 — verified against the live API with a real key (2026-11-26).**
+> **Status: v2.6 — bilingual UI on top of v2.5; v2.5 was verified against the live API with a real key (2026-11-26). v2.6 adds only the interface language layer, whose own checks are listed in `docs/验收清单.md`.**
 >
-> The page UI is in Chinese only.
+> The page UI is bilingual (Chinese / English) and opens in Chinese; a button at the top right switches it.
 
 ## 1. What it is
 
 - **One HTML file**: `mimoasr2md.html` is the entire program — no install, no build step, and no resources loaded from the network, so the interface still works offline.
 - **Many recordings at once**: multi-select files, drag and drop, or pick a whole folder.
 - **Merged export**: all results are merged in selection order into a single `.md` file, one section per recording, each with the file name, basic info and the transcript.
+- **Bilingual UI**: Chinese and English, Chinese on first open; the button at the top right switches instantly without reloading, and the choice is remembered by the browser.
 - **Recognition is done by the provider**: transcription calls Xiaomi MiMo's speech API (model `mimo-v2.5-asr`) with your own API key. **Your audio is uploaded to the provider**; apart from that the page sends data nowhere else.
-- **Explicitly out of scope**: speaker diarization, timestamps or per-sentence timing, a server or local proxy, offline/local recognition, and a multilingual UI.
+- **Explicitly out of scope**: speaker diarization, timestamps or per-sentence timing, a server or local proxy, offline/local recognition, UI languages other than Chinese and English, and automatic browser-language detection.
 
 ## 2. Quick start
 
@@ -54,20 +55,22 @@ Click "preview" to see the exact text that will be saved: at the top, generation
 ### 2.6 Save the Markdown
 
 - Click "save md": Edge / Chrome opens the system **Save As** dialog so you can choose the folder and file name. If the browser does not support it or the call is denied, it falls back to a download in the browser's download folder (Firefox always takes this path).
-- Output file name: type your own in the "output file name" field — Chinese characters and spaces are allowed (characters Windows forbids are replaced). Leave it empty for automatic naming:
-  - one recording → `<original audio name>_转写.md`
-  - several recordings → `转写记录_YYYYMMDD_HHMMSS.md` (local time)
+- Output file name: type your own in the "output file name" field — Chinese characters and spaces are allowed (characters Windows forbids are replaced). Leave it empty for automatic naming, which follows the current UI language:
+  - one recording → `<original audio name>_转写.md` (English UI: `<original audio name>_transcript.md`)
+  - several recordings → `转写记录_YYYYMMDD_HHMMSS.md` (local time; English UI: `Transcript_YYYYMMDD_HHMMSS.md`)
 - Merge order matches **the order you selected the files**; completion order does not matter.
 - There is also a "copy" button that puts the whole document on the clipboard.
 - Document options (under Settings): clearing "include metadata block" keeps only the title, section headings and transcripts (failed items still keep a one-line reason); "BOM" helps very old Notepad; "protect original formatting" (on by default) stops leading `---`, code fences and similar Markdown from breaking the section structure. Very long lines without line breaks are wrapped at sentence boundaries for readability only — the text itself is unchanged.
 - Cancelling the save is not an error; the content stays in the preview area and can be saved or copied again.
+- The document follows the UI language: the English UI produces the English template (English title and field labels), while audio file names and transcript text are never translated.
 
 ### 2.7 Other options
 
-Switches at the bottom of the page and under "Settings" (non-sensitive ones are remembered; if storage fails they apply to the current session only):
+The language button at the top right, and the switches at the bottom of the page and under "Settings" (non-sensitive ones are remembered; if storage fails they apply to the current session only):
 
 | Option | Meaning |
 |---|---|
+| Interface language | The button at the top right shows the target language (`EN` on the Chinese UI, `中文` on the English UI); switching is instant with no reload, the choice is remembered, and the first open is Chinese |
 | Language | Auto / Chinese / English, auto by default; an explicit language reduces misdetection |
 | Concurrency | Number of segment requests in flight; higher is faster but more likely to hit provider rate limits, lower is safer (see §4 of [`docs/方案.md`](docs/方案.md) for the range) |
 | Silence-aware splitting | On by default: cut at silences to avoid chopping words in half; when off, cut at fixed-length boundaries |

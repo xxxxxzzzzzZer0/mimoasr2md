@@ -131,110 +131,111 @@ pre#preview{
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><strong>音频转文字</strong><span class="sub">MiMo-V2.5-ASR</span></div>
+    <div class="brand"><strong data-i18n="brand.name">音频转文字</strong><span class="sub">MiMo-V2.5-ASR</span></div>
     <div>
-      <button id="btnSettings" class="ghost" aria-expanded="false" aria-controls="settingsPanel">设置</button>
-      <button id="btnHelp" class="ghost" aria-expanded="false" aria-controls="helpPanel">说明</button>
+      <button id="btnLang" class="ghost" data-i18n="lang.btn" data-i18n-aria="lang.aria">EN</button>
+      <button id="btnSettings" class="ghost" aria-expanded="false" aria-controls="settingsPanel" data-i18n="ui.settings">设置</button>
+      <button id="btnHelp" class="ghost" aria-expanded="false" aria-controls="helpPanel" data-i18n="ui.help">说明</button>
     </div>
   </header>
 
-  <div class="notice">ⓘ 音频将上传至 <code id="baseUrlText"></code>；API Key 仅存于本页内存，不写入磁盘。</div>
+  <div class="notice"><span data-i18n="notice.pre">ⓘ 音频将上传至 </span><code id="baseUrlText"></code><span data-i18n="notice.post">；API Key 仅存于本页内存，不写入磁盘。</span></div>
 
   <section id="settingsPanel" class="panel" hidden>
-    <h2>设置（非敏感项可持久化）</h2>
+    <h2 data-i18n="set.title">设置（非敏感项可持久化）</h2>
     <div class="grid">
-      <label>Base URL<input id="setBaseUrl" type="text" spellcheck="false" autocomplete="off"></label>
-      <label>模型<input id="setModel" type="text" spellcheck="false" autocomplete="off"></label>
-      <label>单价（元 / 小时）<input id="setPrice" type="number" min="0.01" step="0.01"></label>
+      <label><span data-i18n="set.baseUrl">Base URL</span><input id="setBaseUrl" type="text" spellcheck="false" autocomplete="off"></label>
+      <label><span data-i18n="set.model">模型</span><input id="setModel" type="text" spellcheck="false" autocomplete="off"></label>
+      <label><span data-i18n="set.price">单价（元 / 小时）</span><input id="setPrice" type="number" min="0.01" step="0.01"></label>
     </div>
     <div class="checks">
-      <label><input type="checkbox" id="setShowMeta"> 导出含元信息块</label>
-      <label><input type="checkbox" id="setBom"> 导出加 UTF-8 BOM（兼容旧版记事本）</label>
+      <label><input type="checkbox" id="setShowMeta"> <span data-i18n="set.showMeta">导出含元信息块</span></label>
+      <label><input type="checkbox" id="setBom"> <span data-i18n="set.bom">导出加 UTF-8 BOM（兼容旧版记事本）</span></label>
     </div>
     <div class="row">
-      <button id="btnSaveSettings" class="primary">保存设置</button>
-      <button id="btnResetSettings" class="ghost">恢复默认</button>
+      <button id="btnSaveSettings" class="primary" data-i18n="set.save">保存设置</button>
+      <button id="btnResetSettings" class="ghost" data-i18n="set.reset">恢复默认</button>
       <span id="settingsHint" class="hint"></span>
     </div>
   </section>
 
   <section id="helpPanel" class="panel" hidden>
-    <h2>说明</h2>
+    <h2 data-i18n="help.title">说明</h2>
     <ul style="margin:0;padding-left:20px;font-size:13px;color:var(--muted)">
-      <li>音频会上传至上方 Base URL 指向的服务商；请只在受信设备上使用，并自行确认内容合规。</li>
-      <li>API Key 只保存在本页内存，刷新即失效；页面不会把它写进磁盘、日志、预览或导出的 Markdown。</li>
-      <li>支持 wav / mp3 直传；m4a / aac / ogg / flac / webm 自动转单声道后上传；amr / wma / 3gp 需先转为 mp3 或 wav（不会发起请求）。</li>
-      <li>长录音按静音点自动切片后逐段转写，结果按文件选择顺序合并为一个 Markdown。</li>
-      <li>页面完全离线可用（除调用 API 外无任何外部请求），可直接转发给同事；HTML 本身不含凭证。</li>
-      <li>长任务建议保持页面在前台，后台可能被浏览器节流；中途取消时已完成的结果仍可导出。</li>
+      <li data-i18n="help.1">音频会上传至上方 Base URL 指向的服务商；请只在受信设备上使用，并自行确认内容合规。</li>
+      <li data-i18n="help.2">API Key 只保存在本页内存，刷新即失效；页面不会把它写进磁盘、日志、预览或导出的 Markdown。</li>
+      <li data-i18n="help.3">支持 wav / mp3 直传；m4a / aac / ogg / flac / webm 自动转单声道后上传；amr / wma / 3gp 需先转为 mp3 或 wav（不会发起请求）。</li>
+      <li data-i18n="help.4">长录音按静音点自动切片后逐段转写，结果按文件选择顺序合并为一个 Markdown。</li>
+      <li data-i18n="help.5">页面完全离线可用（除调用 API 外无任何外部请求），可直接转发给同事；HTML 本身不含凭证。</li>
+      <li data-i18n="help.6">长任务建议保持页面在前台，后台可能被浏览器节流；中途取消时已完成的结果仍可导出。</li>
     </ul>
   </section>
 
   <section class="keyrow">
-    <label for="keyInput" style="min-width:56px">API Key</label>
-    <input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴 API Key（仅存于本页内存）">
+    <label for="keyInput" style="min-width:56px" data-i18n="key.label">API Key</label>
+    <input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴 API Key（仅存于本页内存）" data-i18n-ph="key.ph">
     <span id="keyMasked" class="mask" hidden></span>
-    <button id="btnKeySave" class="primary">配置</button>
-    <button id="btnKeyChange" class="ghost" hidden>更换</button>
-    <button id="btnKeyShow" class="ghost" hidden>显示 3 秒</button>
+    <button id="btnKeySave" class="primary" data-i18n="key.set">配置</button>
+    <button id="btnKeyChange" class="ghost" hidden data-i18n="key.change">更换</button>
+    <button id="btnKeyShow" class="ghost" hidden data-i18n="key.show">显示 3 秒</button>
     <span id="keyState" class="dot">○ 未配置</span>
   </section>
 
   <section id="dropZone" class="drop">
-    <div>拖入 wav / mp3 / m4a / aac / ogg / flac / webm 文件，或选择文件夹</div>
+    <div data-i18n="drop.text">拖入 wav / mp3 / m4a / aac / ogg / flac / webm 文件，或选择文件夹</div>
     <div>
-      <button id="btnPickFiles" class="primary">选择文件</button>
-      <button id="btnPickDir" class="ghost">选择文件夹</button>
+      <button id="btnPickFiles" class="primary" data-i18n="drop.files">选择文件</button>
+      <button id="btnPickDir" class="ghost" data-i18n="drop.dir">选择文件夹</button>
     </div>
     <input id="fileInput" type="file" multiple accept=".wav,.mp3,.m4a,.aac,.ogg,.flac,.webm,audio/*" hidden>
     <input id="dirInput" type="file" webkitdirectory directory multiple hidden>
   </section>
-  <div class="privacy">隐私提示：选择文件夹时，所选目录下的文件名对页面可见；页面只读取你选中的音频。</div>
+  <div class="privacy" data-i18n="drop.privacy">隐私提示：选择文件夹时，所选目录下的文件名对页面可见；页面只读取你选中的音频。</div>
 
   <div class="tablewrap">
-    <table aria-label="文件列表">
+    <table aria-label="文件列表" data-i18n-aria="tbl.aria">
       <thead>
-        <tr><th>#</th><th>文件名</th><th>大小</th><th>时长</th><th>处理</th><th>状态</th><th>操作</th></tr>
+        <tr><th>#</th><th data-i18n="tbl.name">文件名</th><th data-i18n="tbl.size">大小</th><th data-i18n="tbl.dur">时长</th><th data-i18n="tbl.mode">处理</th><th data-i18n="tbl.status">状态</th><th data-i18n="tbl.ops">操作</th></tr>
       </thead>
       <tbody id="fileBody"></tbody>
     </table>
-    <div id="emptyRow" class="empty">尚未添加文件</div>
+    <div id="emptyRow" class="empty" data-i18n="tbl.empty">尚未添加文件</div>
   </div>
 
   <section class="controls">
-    <label>语种
+    <label><span data-i18n="opt.lang">语种</span>
       <select id="optLang">
-        <option value="auto">自动</option>
-        <option value="zh">中文</option>
-        <option value="en">英文</option>
+        <option value="auto" data-i18n="opt.auto">自动</option>
+        <option value="zh" data-i18n="opt.zh">中文</option>
+        <option value="en" data-i18n="opt.en">英文</option>
       </select>
     </label>
-    <label>并发 <input id="optConcurrency" type="number" min="2" max="5" step="1"></label>
-    <label><input type="checkbox" id="optStream"> 流式（实验）</label>
-    <label><input type="checkbox" id="optSilence"> 静音切片</label>
-    <label><input type="checkbox" id="optProtect"> 保护原文格式</label>
+    <label><span data-i18n="opt.concurrency">并发</span> <input id="optConcurrency" type="number" min="2" max="5" step="1"></label>
+    <label><input type="checkbox" id="optStream"> <span data-i18n="opt.stream">流式（实验）</span></label>
+    <label><input type="checkbox" id="optSilence"> <span data-i18n="opt.silence">静音切片</span></label>
+    <label><input type="checkbox" id="optProtect"> <span data-i18n="opt.protect">保护原文格式</span></label>
   </section>
 
   <section class="outrow">
-    <label for="outName" style="white-space:nowrap">输出文件名</label>
-    <input id="outName" type="text" placeholder="留空自动命名（支持中文与空格）" autocomplete="off">
+    <label for="outName" style="white-space:nowrap" data-i18n="out.label">输出文件名</label>
+    <input id="outName" type="text" placeholder="留空自动命名（支持中文与空格）" autocomplete="off" data-i18n-ph="out.ph">
   </section>
 
   <section class="actions">
-    <button id="btnStart" class="primary big" disabled>开始转写</button>
-    <button id="btnCancel" class="danger" disabled>取消</button>
-    <button id="btnPreview" class="ghost">预览</button>
-    <button id="btnSave" class="primary" disabled>保存 md</button>
-    <button id="btnCopy" class="ghost" disabled>复制</button>
+    <button id="btnStart" class="primary big" disabled data-i18n="act.start">开始转写</button>
+    <button id="btnCancel" class="danger" disabled data-i18n="act.cancel">取消</button>
+    <button id="btnPreview" class="ghost" data-i18n="act.preview">预览</button>
+    <button id="btnSave" class="primary" disabled data-i18n="act.save">保存 md</button>
+    <button id="btnCopy" class="ghost" disabled data-i18n="act.copy">复制</button>
   </section>
 
   <section id="previewPanel" class="panel" hidden>
-    <div class="panelhead"><h2>预览（保存内容以此为准）</h2><span id="previewInfo" class="hint"></span></div>
+    <div class="panelhead"><h2 data-i18n="prev.title">预览（保存内容以此为准）</h2><span id="previewInfo" class="hint"></span></div>
     <pre id="preview" tabindex="0"></pre>
   </section>
 
   <section class="panel">
-    <div class="panelhead"><h2>日志（已脱敏）</h2><button id="btnClearLog" class="ghost small">清空</button></div>
+    <div class="panelhead"><h2 data-i18n="log.title">日志（已脱敏）</h2><button id="btnClearLog" class="ghost small" data-i18n="log.clear">清空</button></div>
     <div id="log" class="log" role="log" aria-live="polite"></div>
   </section>
 
@@ -242,12 +243,12 @@ pre#preview{
 </div>
 <div id="jsonModal" class="modal" hidden>
   <div class="modalbox" role="dialog" aria-modal="true" aria-labelledby="jsonTitle">
-    <div class="panelhead"><h2 id="jsonTitle">原始响应 JSON</h2><button id="btnJsonClose" class="ghost">关闭</button></div>
+    <div class="panelhead"><h2 id="jsonTitle" data-i18n="json.title">原始响应 JSON</h2><button id="btnJsonClose" class="ghost" data-i18n="json.close">关闭</button></div>
     <pre id="jsonBody"></pre>
   </div>
 </div>
 <div id="toast" class="toast" role="status" hidden></div>
-<noscript><p style="max-width:1080px;margin:20px auto">本工具需要启用 JavaScript。</p></noscript>
+<noscript><p style="max-width:1080px;margin:20px auto" data-i18n="doc.noscript">本工具需要启用 JavaScript。</p></noscript>
 
 <script>
 /* 配置与常量：全文件唯一来源；数值口径见 方案.md §4，禁止在别处复制字面量。 */
@@ -324,6 +325,7 @@ pre#preview{
 
     LANG_DEFAULT: 'auto',
     PRICE_PER_HOUR: 0.5,
+    UI_LANG_DEFAULT: 'zh',
     LS_KEY: 'asr2md.settings.v1'
   });
 
@@ -331,6 +333,7 @@ pre#preview{
     baseUrl: CONFIG.BASE_URL,
     model: CONFIG.MODEL,
     lang: CONFIG.LANG_DEFAULT,
+    uiLang: CONFIG.UI_LANG_DEFAULT,
     concurrency: CONFIG.CONCURRENCY_DEFAULT,
     stream: false,
     silenceSlice: true,
@@ -341,16 +344,23 @@ pre#preview{
   });
 
   var Util = {
-    /* 错误对象唯一形状（方案 §7.2），任何模块不得自造字段。 */
+    /* 错误对象唯一形状（方案 §7.2），任何模块不得自造字段。
+       message 必须是当前语言下可直接展示的字符串；msgKey/msgVars 仅供切换语言后重译（I18N.errText）。 */
     err: function (spec) {
       spec = spec || {};
+      var key = spec.msgKey || null;
+      var vars = spec.msgVars || null;
+      var msg = spec.message;
+      if (msg == null && key && ns.I18N) { msg = ns.I18N.t(key, vars); }
       return {
         kind: spec.kind || 'unknown',
         httpStatus: typeof spec.httpStatus === 'number' ? spec.httpStatus : null,
         code: spec.code === undefined ? null : spec.code,
-        message: spec.message || '',
+        message: msg || '',
         retriable: spec.retriable === true,
-        stage: spec.stage || 'queue'
+        stage: spec.stage || 'queue',
+        msgKey: key,
+        msgVars: vars
       };
     },
     now: function () { return Date.now(); },
@@ -403,6 +413,9 @@ pre#preview{
     if (out.lang != null && ['auto', 'zh', 'en'].indexOf(out.lang) < 0) {
       out.lang = DEFAULTS.lang;
     }
+    if (out.uiLang != null && ['zh', 'en'].indexOf(out.uiLang) < 0) {
+      out.uiLang = DEFAULTS.uiLang;
+    }
     return out;
   }
 
@@ -445,6 +458,627 @@ pre#preview{
   ns.Util = Util;
   ns.Config = Config;
 })(window.ASR2MD = window.ASR2MD || {});
+/* 界面语言（方案 §6.1）：词典内联、零外链。key 口径与术语表见 build/contracts-i18n.md，
+   zh 文案必须与 v2.5 逐字一致（全角标点、状态图标、U+3000 分隔都不能动），en 只做同 key 集翻译。
+   静态节点靠 data-i18n* 标注一次性赋值；动态文案一律走 t()/tp()，禁止在调用处拼半句话。 */
+(function (ns) {
+  'use strict';
+
+  var DICT = {
+    zh: {
+      // ---- 文档 / 头部 ----
+      'doc.title': '音频转文字 · MiMo-ASR',
+      'doc.noscript': '本工具需要启用 JavaScript。',
+      'brand.name': '音频转文字',
+      'ui.settings': '设置',
+      'ui.help': '说明',
+      'lang.btn': 'EN',
+      'lang.aria': 'Switch to English',
+
+      // ---- 隐私提示（base_url 由 <code> 单独渲染，故拆成前后两段）----
+      'notice.pre': 'ⓘ 音频将上传至 ',
+      'notice.post': '；API Key 仅存于本页内存，不写入磁盘。',
+
+      // ---- 设置面板 ----
+      'set.title': '设置（非敏感项可持久化）',
+      'set.baseUrl': 'Base URL',
+      'set.model': '模型',
+      'set.price': '单价（元 / 小时）',
+      'set.showMeta': '导出含元信息块',
+      'set.bom': '导出加 UTF-8 BOM（兼容旧版记事本）',
+      'set.save': '保存设置',
+      'set.reset': '恢复默认',
+      'set.saved': '已保存',
+      'set.unpersisted': '设置无法写入本地存储，本次有效',
+
+      // ---- 说明面板 ----
+      'help.title': '说明',
+      'help.1': '音频会上传至上方 Base URL 指向的服务商；请只在受信设备上使用，并自行确认内容合规。',
+      'help.2': 'API Key 只保存在本页内存，刷新即失效；页面不会把它写进磁盘、日志、预览或导出的 Markdown。',
+      'help.3': '支持 wav / mp3 直传；m4a / aac / ogg / flac / webm 自动转单声道后上传；amr / wma / 3gp 需先转为 mp3 或 wav（不会发起请求）。',
+      'help.4': '长录音按静音点自动切片后逐段转写，结果按文件选择顺序合并为一个 Markdown。',
+      'help.5': '页面完全离线可用（除调用 API 外无任何外部请求），可直接转发给同事；HTML 本身不含凭证。',
+      'help.6': '长任务建议保持页面在前台，后台可能被浏览器节流；中途取消时已完成的结果仍可导出。',
+
+      // ---- API Key 行 ----
+      'key.label': 'API Key',
+      'key.ph': '粘贴 API Key（仅存于本页内存）',
+      'key.set': '配置',
+      'key.change': '更换',
+      'key.show': '显示 3 秒',
+      'key.unset': '○ 未配置',
+      'key.ready': '● 就绪',
+      'key.mask': '已配置 ····{tail}（{n} 字符）',
+      'key.maskShort': '已配置',
+      'key.empty': 'API Key 不能为空',
+      'key.charset': 'API Key 含非 ASCII 或空白字符，格式异常（以服务端校验为准）',
+
+      // ---- 拖放区 ----
+      'drop.text': '拖入 wav / mp3 / m4a / aac / ogg / flac / webm 文件，或选择文件夹',
+      'drop.files': '选择文件',
+      'drop.dir': '选择文件夹',
+      'drop.privacy': '隐私提示：选择文件夹时，所选目录下的文件名对页面可见；页面只读取你选中的音频。',
+
+      // ---- 文件表 ----
+      'tbl.aria': '文件列表',
+      'tbl.name': '文件名',
+      'tbl.size': '大小',
+      'tbl.dur': '时长',
+      'tbl.mode': '处理',
+      'tbl.status': '状态',
+      'tbl.ops': '操作',
+      'tbl.empty': '尚未添加文件',
+
+      // ---- 选项卡 ----
+      'opt.lang': '语种',
+      'opt.auto': '自动',
+      'opt.zh': '中文',
+      'opt.en': '英文',
+      'opt.concurrency': '并发',
+      'opt.stream': '流式（实验）',
+      'opt.silence': '静音切片',
+      'opt.protect': '保护原文格式',
+
+      // ---- 输出名 / 动作 ----
+      'out.label': '输出文件名',
+      'out.ph': '留空自动命名（支持中文与空格）',
+      'act.start': '开始转写',
+      'act.cancel': '取消',
+      'act.preview': '预览',
+      'act.save': '保存 md',
+      'act.copy': '复制',
+
+      // ---- 预览 / 日志 / 弹层 ----
+      'prev.title': '预览（保存内容以此为准）',
+      'prev.empty': '（暂无内容）',
+      'prev.chars': '{n} 字符',
+      'log.title': '日志（已脱敏）',
+      'log.clear': '清空',
+      'json.title': '原始响应 JSON',
+      'json.titleWith': '原始响应 JSON · {name}',
+      'json.close': '关闭',
+
+      // ---- 表格状态 / 处理列 ----
+      'st.pending': '等待',
+      'st.analyzing': '分析中…',
+      'st.running': '转写中 {pct}%',
+      'st.success': '✅ 完成 {s}s',
+      'st.partial': '⚠ 部分失败（缺第 {segs} 段）',
+      'st.failed': '✖ 失败',
+      'st.canceled': '⏹ 已取消',
+      'st.unsupported': '⚠ 不支持',
+      'mode.direct': '直传',
+      'mode.transcoded': '转单声道',
+      'mode.sliced': '转单声道 → 切 {n} 段',
+      'dash': '—',
+
+      // ---- 行内操作 ----
+      'row.json': 'JSON',
+      'row.jsonTitle': '查看原始响应（已脱敏）',
+      'row.retry': '重试',
+      'row.remove': '移除',
+
+      // ---- 时长格式 ----
+      'dur.hms': '{h} 小时 {m} 分 {s} 秒',
+      'dur.ms': '{m} 分 {s} 秒',
+      'dur.s': '{s} 秒',
+
+      // ---- 日志 ----
+      'log.fileErr': '{name}：{msg}',
+      'log.startFile': '开始处理：{name}',
+      'log.split': '{name}：分 {n} 段{extra}',
+      'log.splitDegraded': '（含降级切点）',
+      'log.noValley': '{name}：未找到合格静音谷，已用最安静点并在段间加重叠',
+      'log.segReq': '{name} 第 {i}/{n} 段：请求中（{dur}）',
+      'log.segDone': '{name} 第 {i} 段：完成',
+      'log.segFail': '{name} 第 {i} 段失败：{msg}',
+      'log.segRetryTranscode': '{name} 第 {i} 段：{why}，先转码再二分重试',
+      'log.segRetryBisect': '{name} 第 {i} 段：{why}，自动二分重试',
+      'log.segBisectFail': '{name} 第 {i} 段：二分重切失败（{msg}）',
+      'log.runStart': '开始转写：{n} 个文件',
+      'log.runEnd': '本轮结束',
+      'log.queueErr': '队列异常：{msg}',
+      'log.canceled': '已取消：在飞请求中断，已完成结果保留',
+      'log.retry': '重试：{name}（仅失败/未完成段）',
+      'log.retryEnd': '重试结束：{name}',
+      'log.keySet': 'API Key 已配置（已脱敏）',
+      'log.keyCleared': '已清除内存中的 API Key',
+      'log.settingsSaved': '设置已更新（不含 Key）',
+      'log.settingsReset': '设置已恢复默认',
+      'log.ready': '就绪：请配置 API Key 后添加音频',
+      'log.saved': '已保存：{name}',
+      'log.savedDownload': '已保存（下载）：{name}',
+
+      // ---- toast ----
+      'toast.noFiles': '没有待处理的文件',
+      'toast.keyFirst': '请先配置 API Key',
+      'toast.busy': '请等待当前任务结束',
+      'toast.unsupported': '该格式不支持，请先转为 mp3/wav',
+      'toast.overLimit': '该文件超出处理门槛，请先切分后再添加',
+      'toast.abortRemove': '已中止并移除',
+      'toast.removed': '已移除，不会上传',
+      'toast.added': '已添加 {n} 个',
+      'toast.dup': '重复 {n} 个已忽略',
+      'toast.ignored': '非音频 {n} 个已忽略',
+      'toast.noneAdded': '没有可添加的音频文件',
+      'toast.noExport': '没有可导出的内容',
+      'toast.saved': '已保存：{name}',
+      'toast.savedDownload': '已保存到浏览器下载文件夹',
+      'toast.saveCanceled': '已取消保存，内容仍在预览区',
+      'toast.saveFailed': '保存失败：{msg}',
+      'toast.noCopy': '没有可复制的内容',
+      'toast.copied': '已复制 Markdown 到剪贴板',
+      'toast.copyFailed': '复制失败，请用预览区手动复制',
+      'toast.noRaw': '暂无原始响应',
+      'toast.badBase': 'Base URL 需以 http:// 或 https:// 开头',
+      'toast.join': '，',
+
+      // ---- 错误 ----
+      'err.unknown': '未知错误',
+      'err.memory': '文件过大，内存不足，建议先切分后再试',
+      'err.abort': '音频处理已取消',
+      'err.canceled': '已取消',
+      'err.decode': '浏览器无法解码该音频编码，请先转为 MP3/WAV',
+      'err.decodeNamed': '音频解码失败（{name}）',
+      'err.noAudioApi': '当前环境不支持音频解码，请改用 Edge / Chrome 打开',
+      'err.memWarn': '音频较长（约 {min} 分钟），预计内存约 {mb} MB，处理期间请保持页面在前台',
+      'err.tooBig': '文件超过体积上限，请先切分',
+      'err.tooLong': '音频时长超过上限，请先切分',
+      'err.emptyAudio': '音频内容为空，无法解码',
+      'err.sliceFail': '切片失败（{name}）',
+      'err.noData': '没有可编码的音频数据',
+      'err.badBoundary': '切片边界无效，无法编码',
+      'err.sliceOver': '切片仍超出上限',
+      'err.encodeFail': '音频编码失败（{name}）',
+      'err.connectTimeout': '连接超时，请检查网络/代理后重试',
+      'err.idleTimeout': '流式响应长时间无数据，已中断',
+      'err.timeout': '请求超时，请稍后重试',
+      'err.http400': '{detail}（已重切仍失败）',
+      'err.http400Def': '请求格式或大小不合规',
+      'err.http401': 'API Key 无效',
+      'err.http402': '账户余额不足',
+      'err.http403': '当前地区或风控限制',
+      'err.http404': '接口地址不存在，请检查 base_url',
+      'err.http421': '服务端判定内容不可处理',
+      'err.http429': '限流，稍后重试{suffix}',
+      'err.http5xx': '服务端异常（HTTP {status}）{suffix}',
+      'err.httpOther': '请求失败（HTTP {status}）{suffix}',
+      'err.noResponse': '请求失败，未收到有效响应{suffix}',
+      'err.suffix': '：{s}',
+      'err.paren': '（{s}）',
+      'err.badJson': '响应不是合法 JSON，无法解析',
+      'err.truncated': '转写结果被截断，可能不完整',
+      'err.empty': '未识别到有效语音（疑似静音/纯音乐）',
+      'err.network': '网络请求失败，请检查网络/代理/防火墙{paren}',
+      'err.noFetch': '当前环境不支持 fetch',
+      'err.badResponse': '响应对象无效',
+      'err.noKey': '请先填写 API Key',
+      'err.noAudio': '缺少音频数据',
+      'err.failed': '请求失败',
+      'err.unsupported': '浏览器不支持该编码，请先转为 mp3/wav',
+      'err.encode': '编码失败',
+      'err.bisectFail': '二分重切失败',
+      'err.partial': '重启后仍有一段失败，结果可能不完整',
+      'err.transcribeFailed': '转写失败',
+      'err.saveUnsupported': '当前环境不支持另存为或下载',
+      'err.saveFailed': '保存失败',
+
+      // ---- 二分重试原因（拼进日志，不是完整句子）----
+      'why.sliceOver': '切片超限',
+      'why.truncated': '输出截断',
+      'why.http400': '服务端 400',
+
+      // ---- 导出 md ----
+      'md.title': '# 语音转写记录',
+      'md.generated': '- 生成时间：{dt}',
+      'md.model': '- 模型：{model}{sep}语种参数：{lang}',
+      'md.files': '- 文件：{n} 个（成功 {ok} / 失败 {fail}）',
+      'md.total': '- 音频总时长：{dur}{sep}预估费用：约 ¥{cost}（¥{price}/小时，以账单为准）',
+      'md.overlap': '{sep}（含 {s} s 重叠，略高于录音时长）',
+      'md.size': '- 大小：{size}',
+      'md.durPart': '{sep}时长：{dur}',
+      'md.procDirect': '- 处理：直传',
+      'md.procTranscoded': '- 处理：转 {rate} 单声道',
+      'md.procSliced': '- 处理：转 {rate} 单声道 → 切 {n} 段',
+      'md.status': '- 状态：{word}{elapsed}',
+      'md.st.success': '成功',
+      'md.st.partial': '部分失败',
+      'md.st.canceled': '已取消',
+      'md.st.failed': '失败',
+      'md.missing': '（缺第 {segs} 段）',
+      'md.elapsed': '{sep}耗时：{s} s',
+      'md.reason': ' —— {msg}',
+      'md.notePart1': '该文件部分内容缺失（缺第 {segs} 段），正文可能不完整',
+      'md.notePart2': '该文件部分内容缺失，正文可能不完整',
+      'md.noteCanceled': '该文件未完成：已取消',
+      'md.noteFailed': '该文件未能转写{reason}',
+      'md.h2': '## {i}. {name}',
+      'md.sep': '\u3000\u3000',
+      'list.sep': '、',
+
+      // ---- 自动文件名 ----
+      'fname.single': '{base}_转写.md',
+      'fname.multi': '转写记录_{stamp}.md',
+      'fname.fallback': '转写记录.md',
+      'fname.base': '转写'
+    },
+    en: {
+      // ---- Document / header ----
+      'doc.title': 'Audio → Text · MiMo-ASR',
+      'doc.noscript': 'This tool requires JavaScript.',
+      'brand.name': 'Audio → Text',
+      'ui.settings': 'Settings',
+      'ui.help': 'Help',
+      'lang.btn': '中文',
+      'lang.aria': '切换到中文',
+
+      // ---- Privacy notice (base_url is rendered separately in a <code>) ----
+      'notice.pre': 'ⓘ Audio will be uploaded to ',
+      'notice.post': '; the API Key stays in this page\'s memory and is never written to disk.',
+
+      // ---- Settings panel ----
+      'set.title': 'Settings (non-sensitive items may be persisted)',
+      'set.baseUrl': 'Base URL',
+      'set.model': 'Model',
+      'set.price': 'Price (CNY / hour)',
+      'set.showMeta': 'Include metadata block in export',
+      'set.bom': 'Add UTF-8 BOM to export (for legacy Notepad)',
+      'set.save': 'Save settings',
+      'set.reset': 'Restore defaults',
+      'set.saved': 'Saved',
+      'set.unpersisted': 'Settings could not be written to local storage; they apply to this session only',
+
+      // ---- Help panel ----
+      'help.title': 'Help',
+      'help.1': 'Audio is uploaded to the provider behind the Base URL above; use this only on trusted devices and make sure your content is compliant.',
+      'help.2': 'The API Key lives only in this page\'s memory and is gone on refresh; the page never writes it to disk, logs, the preview, or the exported Markdown.',
+      'help.3': 'wav / mp3 upload directly; m4a / aac / ogg / flac / webm are converted to mono first; amr / wma / 3gp must be converted to mp3 or wav beforehand (no request is sent).',
+      'help.4': 'Long recordings are split at silence points (silence-aware splitting) and transcribed segment by segment, then merged into one Markdown file in the order you selected them.',
+      'help.5': 'The page works fully offline (no requests beyond the API calls) and can be forwarded to colleagues as is; the HTML itself holds no credentials.',
+      'help.6': 'For long jobs keep the page in the foreground, as background tabs may be throttled; if you cancel midway, the finished results can still be exported.',
+
+      // ---- API Key row ----
+      'key.label': 'API Key',
+      'key.ph': 'Paste API Key (kept in this page\'s memory only)',
+      'key.set': 'Set',
+      'key.change': 'Change',
+      'key.show': 'Show for 3 s',
+      'key.unset': '○ Not set',
+      'key.ready': '● Ready',
+      'key.mask': 'Set ····{tail} ({n} characters)',
+      'key.maskShort': 'Set',
+      'key.empty': 'API Key cannot be empty',
+      'key.charset': 'API Key contains non-ASCII or whitespace characters, which looks wrong (server-side validation is authoritative)',
+
+      // ---- Drop zone ----
+      'drop.text': 'Drop wav / mp3 / m4a / aac / ogg / flac / webm files here, or choose a folder',
+      'drop.files': 'Choose files',
+      'drop.dir': 'Choose folder',
+      'drop.privacy': 'Privacy: when you choose a folder, the file names in it are visible to the page; only the audio you select is read.',
+
+      // ---- File table ----
+      'tbl.aria': 'File list',
+      'tbl.name': 'File name',
+      'tbl.size': 'Size',
+      'tbl.dur': 'Duration',
+      'tbl.mode': 'Processing',
+      'tbl.status': 'Status',
+      'tbl.ops': 'Actions',
+      'tbl.empty': 'No files added yet',
+
+      // ---- Options ----
+      'opt.lang': 'Language',
+      'opt.auto': 'Auto',
+      'opt.zh': 'Chinese',
+      'opt.en': 'English',
+      'opt.concurrency': 'Concurrency',
+      'opt.stream': 'Streaming (experimental)',
+      'opt.silence': 'Silence-aware splitting',
+      'opt.protect': 'Protect source formatting',
+
+      // ---- Output name / actions ----
+      'out.label': 'Output file name',
+      'out.ph': 'Leave empty to auto-name (Chinese characters and spaces are allowed)',
+      'act.start': 'Start transcription',
+      'act.cancel': 'Cancel',
+      'act.preview': 'Preview',
+      'act.save': 'Save md',
+      'act.copy': 'Copy',
+
+      // ---- Preview / log / overlay ----
+      'prev.title': 'Preview (this is exactly what gets saved)',
+      'prev.empty': '(nothing yet)',
+      'prev.chars': '{n} characters',
+      'prev.chars.one': '{n} character',
+      'log.title': 'Log (redacted)',
+      'log.clear': 'Clear',
+      'json.title': 'Raw response JSON',
+      'json.titleWith': 'Raw response JSON · {name}',
+      'json.close': 'Close',
+
+      // ---- Table status / processing column ----
+      'st.pending': 'Queued',
+      'st.analyzing': 'Analyzing…',
+      'st.running': 'Transcribing {pct}%',
+      'st.success': '✅ Done {s}s',
+      'st.partial': '⚠ Partially failed (missing segment(s) {segs})',
+      'st.failed': '✖ Failed',
+      'st.canceled': '⏹ Canceled',
+      'st.unsupported': '⚠ Unsupported',
+      'mode.direct': 'Direct upload',
+      'mode.transcoded': 'Converted to mono',
+      'mode.sliced': 'Converted to mono → {n} segments',
+      'mode.sliced.one': 'Converted to mono → {n} segment',
+      'dash': '—',
+
+      // ---- Row actions ----
+      'row.json': 'JSON',
+      'row.jsonTitle': 'View raw response (redacted)',
+      'row.retry': 'Retry',
+      'row.remove': 'Remove',
+
+      // ---- Duration format ----
+      'dur.hms': '{h} h {m} min {s} s',
+      'dur.ms': '{m} min {s} s',
+      'dur.s': '{s} s',
+
+      // ---- Log ----
+      'log.fileErr': '{name}: {msg}',
+      'log.startFile': 'Processing started: {name}',
+      'log.split': '{name}: split into {n} segments{extra}',
+      'log.split.one': '{name}: split into {n} segment{extra}',
+      'log.splitDegraded': ' (includes fallback split points)',
+      'log.noValley': '{name}: no acceptable silence valley found; used the quietest point with overlap between segments',
+      'log.segReq': '{name} segment {i}/{n}: requesting ({dur})',
+      'log.segDone': '{name} segment {i}: done',
+      'log.segFail': '{name} segment {i} failed: {msg}',
+      'log.segRetryTranscode': '{name} segment {i}: {why}; transcoding first, then bisect retry',
+      'log.segRetryBisect': '{name} segment {i}: {why}; automatic bisect retry',
+      'log.segBisectFail': '{name} segment {i}: bisect re-split failed ({msg})',
+      'log.runStart': 'Transcription started: {n} files',
+      'log.runStart.one': 'Transcription started: {n} file',
+      'log.runEnd': 'Run finished',
+      'log.queueErr': 'Queue error: {msg}',
+      'log.canceled': 'Canceled: in-flight requests aborted, finished results kept',
+      'log.retry': 'Retry: {name} (failed or unfinished segments only)',
+      'log.retryEnd': 'Retry finished: {name}',
+      'log.keySet': 'API Key set (redacted)',
+      'log.keyCleared': 'API Key cleared from memory',
+      'log.settingsSaved': 'Settings updated (Key not included)',
+      'log.settingsReset': 'Settings restored to defaults',
+      'log.ready': 'Ready: set an API Key, then add audio',
+      'log.saved': 'Saved: {name}',
+      'log.savedDownload': 'Saved (downloaded): {name}',
+
+      // ---- toast ----
+      'toast.noFiles': 'No files to process',
+      'toast.keyFirst': 'Set an API Key first',
+      'toast.busy': 'Wait for the current job to finish',
+      'toast.unsupported': 'This format is not supported; convert it to mp3/wav first',
+      'toast.overLimit': 'This file is over the processing limit; split it before adding',
+      'toast.abortRemove': 'Aborted and removed',
+      'toast.removed': 'Removed, it will not be uploaded',
+      'toast.added': 'Added {n} files',
+      'toast.added.one': 'Added {n} file',
+      'toast.dup': 'Ignored {n} duplicates',
+      'toast.dup.one': 'Ignored {n} duplicate',
+      'toast.ignored': 'Ignored {n} non-audio files',
+      'toast.ignored.one': 'Ignored {n} non-audio file',
+      'toast.noneAdded': 'No audio files to add',
+      'toast.noExport': 'Nothing to export',
+      'toast.saved': 'Saved: {name}',
+      'toast.savedDownload': 'Saved to the browser download folder',
+      'toast.saveCanceled': 'Save canceled; the content is still in the preview',
+      'toast.saveFailed': 'Save failed: {msg}',
+      'toast.noCopy': 'Nothing to copy',
+      'toast.copied': 'Markdown copied to the clipboard',
+      'toast.copyFailed': 'Copy failed; copy manually from the preview',
+      'toast.noRaw': 'No raw response yet',
+      'toast.badBase': 'Base URL must start with http:// or https://',
+      'toast.join': ', ',
+
+      // ---- Errors ----
+      'err.unknown': 'Unknown error',
+      'err.memory': 'File too large, out of memory; split it and try again',
+      'err.abort': 'Audio processing canceled',
+      'err.canceled': 'Canceled',
+      'err.decode': 'The browser cannot decode this audio codec; convert it to MP3/WAV first',
+      'err.decodeNamed': 'Audio decoding failed ({name})',
+      'err.noAudioApi': 'Audio decoding is not supported here; open the page in Edge / Chrome',
+      'err.memWarn': 'Long audio (~{min} min), about {mb} MB of memory expected; keep the page in the foreground while it runs',
+      'err.tooBig': 'File exceeds the size limit; split it first',
+      'err.tooLong': 'Audio exceeds the duration limit; split it first',
+      'err.emptyAudio': 'The audio is empty and cannot be decoded',
+      'err.sliceFail': 'Splitting failed ({name})',
+      'err.noData': 'No audio data to encode',
+      'err.badBoundary': 'Invalid split boundary, cannot encode',
+      'err.sliceOver': 'Segment still exceeds the limit',
+      'err.encodeFail': 'Audio encoding failed ({name})',
+      'err.connectTimeout': 'Connection timed out; check your network/proxy and retry',
+      'err.idleTimeout': 'The streaming response went silent and was aborted',
+      'err.timeout': 'Request timed out; try again later',
+      'err.http400': '{detail} (still failing after re-splitting)',
+      'err.http400Def': 'Request format or size is invalid',
+      'err.http401': 'Invalid API Key',
+      'err.http402': 'Insufficient account balance',
+      'err.http403': 'Blocked by region or risk control',
+      'err.http404': 'Endpoint not found; check base_url',
+      'err.http421': 'The server rejected the content as unprocessable',
+      'err.http429': 'Rate limited, try again later{suffix}',
+      'err.http5xx': 'Server error (HTTP {status}){suffix}',
+      'err.httpOther': 'Request failed (HTTP {status}){suffix}',
+      'err.noResponse': 'Request failed, no valid response{suffix}',
+      'err.suffix': ': {s}',
+      'err.paren': ' ({s})',
+      'err.badJson': 'The response is not valid JSON and cannot be parsed',
+      'err.truncated': 'The transcript was truncated and may be incomplete',
+      'err.empty': 'No speech detected (likely silence or music only)',
+      'err.network': 'Network request failed; check your network/proxy/firewall{paren}',
+      'err.noFetch': 'fetch is not supported here',
+      'err.badResponse': 'Invalid response object',
+      'err.noKey': 'Enter an API Key first',
+      'err.noAudio': 'Audio data is missing',
+      'err.failed': 'Request failed',
+      'err.unsupported': 'The browser does not support this codec; convert it to mp3/wav first',
+      'err.encode': 'Encoding failed',
+      'err.bisectFail': 'Bisect re-split failed',
+      'err.partial': 'One segment still failed after the retry; the result may be incomplete',
+      'err.transcribeFailed': 'Transcription failed',
+      'err.saveUnsupported': 'Save-as and download are not supported here',
+      'err.saveFailed': 'Save failed',
+
+      // ---- Bisect retry reasons (spliced into a log line, not full sentences) ----
+      'why.sliceOver': 'split over limit',
+      'why.truncated': 'output truncated',
+      'why.http400': 'server 400',
+
+      // ---- Exported md ----
+      'md.title': '# Speech Transcript',
+      'md.generated': '- Generated: {dt}',
+      'md.model': '- Model: {model}{sep}Language: {lang}',
+      'md.files': '- Files: {n} (OK {ok} · Failed {fail})',
+      'md.total': '- Total audio: {dur}{sep}Est. cost: ~¥{cost} (¥{price}/hour, billing prevails)',
+      'md.overlap': '{sep}(incl. {s} s overlap, slightly above the recording length)',
+      'md.size': '- Size: {size}',
+      'md.durPart': '{sep}Duration: {dur}',
+      'md.procDirect': '- Processing: Direct upload',
+      'md.procTranscoded': '- Processing: Converted to {rate} mono',
+      'md.procSliced': '- Processing: Converted to {rate} mono → {n} segments',
+      'md.procSliced.one': '- Processing: Converted to {rate} mono → {n} segment',
+      'md.status': '- Status: {word}{elapsed}',
+      'md.st.success': 'Success',
+      'md.st.partial': 'Partially failed',
+      'md.st.canceled': 'Canceled',
+      'md.st.failed': 'Failed',
+      // 前导空格：接在状态词后，中文用全角括号自带间隙，英文半角括号必须手动留空
+      'md.missing': ' (missing segment(s) {segs})',
+      'md.elapsed': '{sep}Elapsed: {s} s',
+      'md.reason': ' —— {msg}',
+      'md.notePart1': 'This file is incomplete (missing segment(s) {segs}), the transcript may be truncated',
+      'md.notePart2': 'This file is incomplete, the transcript may be truncated',
+      'md.noteCanceled': 'This file did not finish: canceled',
+      'md.noteFailed': 'This file was not transcribed{reason}',
+      'md.h2': '## {i}. {name}',
+      'md.sep': ' · ',
+      'list.sep': ', ',
+
+      // ---- Auto file names ----
+      'fname.single': '{base}_transcript.md',
+      'fname.multi': 'Transcript_{stamp}.md',
+      'fname.fallback': 'Transcript.md',
+      'fname.base': 'Transcript'
+    }
+  };
+
+  var lang = ns.CONFIG.UI_LANG_DEFAULT;
+  var listeners = [];
+
+  function dict() { return DICT[lang] || DICT.zh; }
+
+  function has(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
+
+  function fmt(s, vars) {
+    if (!vars) { return String(s); }
+    return String(s).replace(/\{(\w+)\}/g, function (m, k) {
+      if (!has(vars, k)) { return m; }
+      // 函数值在渲染时求值：日志记录里要留「时长」这类随语言变化的片段，
+      // 写入时就渲染会把旧语言冻进去（方案 §6.1 日志重放）。
+      var v = vars[k];
+      return String(typeof v === 'function' ? v() : v);
+    });
+  }
+
+  /* 缺 key 时回落 zh，再回落 key 本身：英文词典漏项时页面仍可用，但漏项会在自测里暴露。 */
+  function t(key, vars) {
+    var d = dict();
+    var s = has(d, key) ? d[key] : (has(DICT.zh, key) ? DICT.zh[key] : key);
+    return fmt(s, vars);
+  }
+
+  /* 英文单复数：只给需要变形的键加 .one，中文不定义 .one。 */
+  function tp(key, n, vars) {
+    var k = Number(n) === 1 && has(dict(), key + '.one') ? key + '.one' : key;
+    return t(k, vars);
+  }
+
+  function applyStatic(root) {
+    var scope = root || document;
+    var i, list;
+    list = scope.querySelectorAll('[data-i18n]');
+    for (i = 0; i < list.length; i += 1) { list[i].textContent = t(list[i].getAttribute('data-i18n')); }
+    list = scope.querySelectorAll('[data-i18n-ph]');
+    for (i = 0; i < list.length; i += 1) { list[i].setAttribute('placeholder', t(list[i].getAttribute('data-i18n-ph'))); }
+    list = scope.querySelectorAll('[data-i18n-aria]');
+    for (i = 0; i < list.length; i += 1) { list[i].setAttribute('aria-label', t(list[i].getAttribute('data-i18n-aria'))); }
+    list = scope.querySelectorAll('[data-i18n-title]');
+    for (i = 0; i < list.length; i += 1) { list[i].setAttribute('title', t(list[i].getAttribute('data-i18n-title'))); }
+  }
+
+  /* 只接受 zh/en，非法值回落 zh；切换后同步 <html lang> 与标题，再广播给订阅者重绘动态区。 */
+  function setLang(next) {
+    lang = next === 'en' ? 'en' : 'zh';
+    document.documentElement.setAttribute('lang', lang === 'en' ? 'en' : 'zh-CN');
+    document.title = t('doc.title');
+    applyStatic(document);
+    listeners.slice().forEach(function (fn) {
+      try { fn(lang); } catch (e) { /* 单个重绘订阅出错不阻断其他区域 */ }
+    });
+    return lang;
+  }
+
+  function onChange(fn) {
+    listeners.push(fn);
+    return function () {
+      var i = listeners.indexOf(fn);
+      if (i >= 0) { listeners.splice(i, 1); }
+    };
+  }
+
+  /* 错误文案：优先按 msgKey 重译（切换语言后仍正确），并统一过 redact，避免服务端 detail 带出明文。 */
+  function errText(e) {
+    if (!e) { return t('err.unknown'); }
+    var vars = e.msgVars;
+    // HTTP 错误的后缀分隔符随语言变化，切换语言后按 detail 重算，避免留下上一种语言的冒号
+    if (vars && vars.detail) {
+      vars = { status: vars.status, detail: vars.detail, suffix: t('err.suffix', { s: vars.detail }) };
+    }
+    var s = e.msgKey ? t(e.msgKey, vars) : (e.message || t('err.unknown'));
+    var api = ns.ApiClient;
+    return api && api.redact ? api.redact(s) : s;
+  }
+
+  ns.I18N = {
+    DICT: DICT,
+    t: t,
+    tp: tp,
+    setLang: setLang,
+    getLang: function () { return lang; },
+    applyStatic: applyStatic,
+    onChange: onChange,
+    errText: errText,
+    timeLocale: function () { return lang === 'en' ? 'en-GB' : 'zh-CN'; }
+  };
+})(window.ASR2MD = window.ASR2MD || {});
 /* 音频引擎（契约 build/contracts.md §1）：解码 / 降采样 / 切片 / 淡变 / WAV / 分块 Base64。
    加载期只读命名空间、不触碰任何浏览器 API，保证 Node 下可直接 require 做纯函数自测。 */
 (function (ns) {
@@ -452,6 +1086,7 @@ pre#preview{
 
   var CONFIG = ns.CONFIG;
   var Util = ns.Util;
+  var T = ns.I18N.t;
   var SR = CONFIG.SAMPLE_RATE;
 
   /* 真实录音的 WAV 常在 fmt 与 data 之间夹 LIST/bext 等块，44 B 读不全；
@@ -484,15 +1119,15 @@ pre#preview{
     }
     var name = e && e.name ? String(e.name) : '';
     if (isRangeError(e) || name === 'OutOfMemoryError') {
-      return Util.err({ kind: 'memory', stage: stage, message: '文件过大，内存不足，建议先切分后再试' });
+      return Util.err({ kind: 'memory', stage: stage, msgKey: 'err.memory' });
     }
     if (name === 'AbortError') {
-      return Util.err({ kind: 'abort', stage: stage, message: '音频处理已取消' });
+      return Util.err({ kind: 'abort', stage: stage, msgKey: 'err.abort' });
     }
     if (name === 'EncodingError' || name === 'NotSupportedError' || name === 'InvalidStateError') {
-      return Util.err({ kind: 'decode', stage: stage, message: '浏览器无法解码该音频编码，请先转为 MP3/WAV' });
+      return Util.err({ kind: 'decode', stage: stage, msgKey: 'err.decode' });
     }
-    return Util.err({ kind: 'decode', stage: stage, message: '音频解码失败（' + (name || '未知错误') + '）' });
+    return Util.err({ kind: 'decode', stage: stage, msgKey: 'err.decodeNamed', msgVars: { name: name || T('err.unknown') } });
   }
 
   /* ---------------- WAV 头 ---------------- */
@@ -582,14 +1217,14 @@ pre#preview{
       throw Util.err({
         kind: 'decode',
         stage: stage,
-        message: '当前环境不支持音频解码，请改用 Edge / Chrome 打开'
+        msgKey: 'err.noAudioApi'
       });
     }
     try {
       return new Ctor(channels, frames, SR);
     } catch (e) {
       if (isRangeError(e)) {
-        throw Util.err({ kind: 'memory', stage: stage, message: '文件过大，内存不足，建议先切分后再试' });
+        throw Util.err({ kind: 'memory', stage: stage, msgKey: 'err.memory' });
       }
       throw e;
     }
@@ -601,7 +1236,7 @@ pre#preview{
       var ret;
       try {
         ret = ctx.decodeAudioData(arrayBuffer, resolve, function (e) {
-          reject(e || Util.err({ kind: 'decode', stage: 'decode', message: '浏览器无法解码该音频编码，请先转为 MP3/WAV' }));
+          reject(e || Util.err({ kind: 'decode', stage: 'decode', msgKey: 'err.decode' }));
         });
       } catch (e) {
         reject(e);
@@ -638,8 +1273,8 @@ pre#preview{
 
   function memWarning(duration) {
     var mb = Math.ceil(duration * SR * 4 / 1000000);
-    return '音频较长（约 ' + Math.round(duration / 60) + ' 分钟），预计内存约 ' + mb +
-      ' MB，处理期间请保持页面在前台';
+    // 返回 key 而非成品文案：这条警告会进日志并随语言重放（方案 §6.1）
+    return { msgKey: 'err.memWarn', msgVars: { min: Math.round(duration / 60), mb: mb } };
   }
 
   /* ---------------- analyze ---------------- */
@@ -662,7 +1297,7 @@ pre#preview{
         /* 不可解码：resolve 而不是 reject——UI 要展示成因，且绝不发请求 */
         if (!base.decodable) { return base; }
         if (sizeBytes > CONFIG.MAX_FILE_SIZE) {
-          throw Util.err({ kind: 'limit', stage: 'analyze', message: '文件超过体积上限，请先切分' });
+          throw Util.err({ kind: 'limit', stage: 'analyze', msgKey: 'err.tooBig' });
         }
         return withDuration(file, ext, base);
       })
@@ -691,7 +1326,7 @@ pre#preview{
     return p.then(function (meta) {
       var duration = meta && meta.duration > 0 ? meta.duration : 0;
       if (duration > CONFIG.MAX_DURATION_SEC) {
-        throw Util.err({ kind: 'limit', stage: 'analyze', message: '音频时长超过上限，请先切分' });
+        throw Util.err({ kind: 'limit', stage: 'analyze', msgKey: 'err.tooLong' });
       }
       return {
         decodable: true,
@@ -757,7 +1392,7 @@ pre#preview{
       .then(function (buffer) {
         var frames = buffer.length;
         if (!(frames > 0)) {
-          throw Util.err({ kind: 'decode', stage: 'decode', message: '音频内容为空，无法解码' });
+          throw Util.err({ kind: 'decode', stage: 'decode', msgKey: 'err.emptyAudio' });
         }
         var ctx2 = makeOfflineCtx(1, frames, 'decode');
         var src = ctx2.createBufferSource();
@@ -1014,9 +1649,9 @@ pre#preview{
       .catch(function (e) {
         if (e && typeof e.kind === 'string') { throw e; }
         if (isRangeError(e)) {
-          throw Util.err({ kind: 'memory', stage: 'slice', message: '文件过大，内存不足，建议先切分后再试' });
+          throw Util.err({ kind: 'memory', stage: 'slice', msgKey: 'err.memory' });
         }
-        throw Util.err({ kind: 'unknown', stage: 'slice', message: '切片失败（' + (e && e.name ? e.name : '未知错误') + '）' });
+        throw Util.err({ kind: 'unknown', stage: 'slice', msgKey: 'err.sliceFail', msgVars: { name: (e && e.name) || T('err.unknown') } });
       });
   }
 
@@ -1066,13 +1701,13 @@ pre#preview{
 
   function encodeWav(pcm) {
     if (!pcm || typeof pcm.length !== 'number') {
-      throw Util.err({ kind: 'unknown', stage: 'encode', message: '没有可编码的音频数据' });
+      throw Util.err({ kind: 'unknown', stage: 'encode', msgKey: 'err.noData' });
     }
     try {
       return wavFromFloat32(pcm);
     } catch (e) {
       if (isRangeError(e)) {
-        throw Util.err({ kind: 'memory', stage: 'encode', message: '文件过大，内存不足，建议先切分后再试' });
+        throw Util.err({ kind: 'memory', stage: 'encode', msgKey: 'err.memory' });
       }
       throw e;
     }
@@ -1101,7 +1736,7 @@ pre#preview{
       var raws = Math.round(seg.startSample);
       var rawe = Math.round(seg.endSample);
       if (!isFinite(raws) || !isFinite(rawe)) {
-        throw Util.err({ kind: 'unknown', stage: 'encode', message: '切片边界无效，无法编码' });
+        throw Util.err({ kind: 'unknown', stage: 'encode', msgKey: 'err.badBoundary' });
       }
       var start = Util.clamp(raws, 0, total);
       var end = Util.clamp(rawe, start, total);
@@ -1124,15 +1759,15 @@ pre#preview{
       var b64 = toBase64(u8);
       if (b64.length > CONFIG.SAFE_B64) {
         /* Queue 收到这个错误会把该段再二分，不能静默发出超限请求 */
-        throw Util.err({ kind: 'slice', stage: 'encode', message: '切片仍超出上限' });
+        throw Util.err({ kind: 'slice', stage: 'encode', msgKey: 'err.sliceOver' });
       }
       return { b64: b64, bytes: u8.length, seconds: n / SR };
     } catch (e) {
       if (e && typeof e.kind === 'string') { throw e; }
       if (isRangeError(e)) {
-        throw Util.err({ kind: 'memory', stage: 'encode', message: '文件过大，内存不足，建议先切分后再试' });
+        throw Util.err({ kind: 'memory', stage: 'encode', msgKey: 'err.memory' });
       }
-      throw Util.err({ kind: 'unknown', stage: 'encode', message: '音频编码失败（' + (e && e.name ? e.name : '未知错误') + '）' });
+      throw Util.err({ kind: 'unknown', stage: 'encode', msgKey: 'err.encodeFail', msgVars: { name: (e && e.name) || T('err.unknown') } });
     }
   }
 
@@ -1155,6 +1790,7 @@ pre#preview{
 
   var CONFIG = ns.CONFIG;
   var Util = ns.Util;
+  var T = ns.I18N.t;
 
   /* key 只允许停在这个闭包变量里（方案 §5.1 / §10.1）：不落任何存储、日志、DOM 或返回值。 */
   var key = null;
@@ -1173,12 +1809,12 @@ pre#preview{
     while (BEARER_RE.test(s)) { s = s.slice(6); }
     if (!s) {
       key = null;
-      return { ok: false, warning: 'API Key 不能为空' };
+      return { ok: false, warning: T('key.empty') };
     }
     key = s;
     // 格式异常只警告，最终以服务端校验为准（方案 §5.1）
     if (!ASCII_VISIBLE_RE.test(s)) {
-      return { ok: true, warning: 'API Key 含非 ASCII 或空白字符，格式异常（以服务端校验为准）' };
+      return { ok: true, warning: T('key.charset') };
     }
     return { ok: true, warning: null };
   }
@@ -1188,7 +1824,7 @@ pre#preview{
   function keyMask() {
     if (!key) { return null; }
     var tail = key.length > 4 ? key.slice(-4) : key;
-    return '已配置 ····' + tail + '（' + key.length + ' 字符）';
+    return T('key.mask', { tail: tail, n: key.length });
   }
 
   function peekKey() { return key; }
@@ -1239,35 +1875,35 @@ pre#preview{
   /* ---------------- 错误构造 ---------------- */
 
   function abortError() {
-    return Util.err({ kind: 'abort', stage: 'request', message: '已取消', retriable: false });
+    return Util.err({ kind: 'abort', stage: 'request', msgKey: 'err.canceled', retriable: false });
   }
 
   /* 超时文案里不写具体秒数，硬参数只在 方案.md §4 定义 */
   function timeoutError(reason) {
-    var msg = reason === 'connect' ? '连接超时，请检查网络/代理后重试'
-      : reason === 'idle' ? '流式响应长时间无数据，已中断'
-        : '请求超时，请稍后重试';
-    return Util.err({ kind: 'timeout', stage: 'request', message: msg, retriable: true });
+    var key = reason === 'connect' ? 'err.connectTimeout'
+      : reason === 'idle' ? 'err.idleTimeout' : 'err.timeout';
+    return Util.err({ kind: 'timeout', stage: 'request', msgKey: key, retriable: true });
   }
 
   function httpError(status, detail, code) {
-    var extra = detail ? '：' + detail : '';
-    var msg;
-    if (status === 401) { msg = 'API Key 无效'; }
-    else if (status === 402) { msg = '账户余额不足'; }
-    else if (status === 403) { msg = '当前地区或风控限制'; }
-    else if (status === 404) { msg = '接口地址不存在，请检查 base_url'; }
-    else if (status === 421) { msg = '服务端判定内容不可处理'; }
-    else if (status === 400) { msg = (detail || '请求格式或大小不合规') + '（已重切仍失败）'; }
-    else if (status === 429) { msg = '限流，稍后重试' + extra; }
-    else if (status >= 500) { msg = '服务端异常（HTTP ' + status + '）' + extra; }
-    else if (!status) { msg = '请求失败，未收到有效响应' + extra; }
-    else { msg = '请求失败（HTTP ' + status + '）' + extra; }
+    /* detail 来自服务端，先脱敏再进插值；文案按 key 取，切换语言后可重译 */
+    var d = detail ? redact(String(detail)) : '';
+    var key = status === 401 ? 'err.http401'
+      : status === 402 ? 'err.http402'
+        : status === 403 ? 'err.http403'
+          : status === 404 ? 'err.http404'
+            : status === 421 ? 'err.http421'
+              : status === 400 ? 'err.http400'
+                : status === 429 ? 'err.http429'
+                  : status >= 500 ? 'err.http5xx'
+                    : status ? 'err.httpOther' : 'err.noResponse';
     return Util.err({
       kind: 'http',
       httpStatus: status || null,
       code: code === undefined ? null : code,
-      message: redact(msg),
+      msgKey: key,
+      // detail 只在 400 上兜底：其他状态若为空，errText 重算后缀时不能凭空多出一句 400 文案
+      msgVars: { status: status, suffix: d ? T('err.suffix', { s: d }) : '', detail: d || (status === 400 ? T('err.http400Def') : '') },
       retriable: status === 429 || status >= 500,
       stage: 'request'
     });
@@ -1372,7 +2008,7 @@ pre#preview{
   function parseJson(text) {
     try { return JSON.parse(text); }
     catch (e) {
-      throw Util.err({ kind: 'unknown', stage: 'parse', message: '响应不是合法 JSON，无法解析', retriable: false });
+      throw Util.err({ kind: 'unknown', stage: 'parse', msgKey: 'err.badJson', retriable: false });
     }
   }
 
@@ -1401,10 +2037,10 @@ pre#preview{
   function finish(text, seconds, finishReason, raw) {
     var t = typeof text === 'string' ? text : '';
     if (finishReason === 'length') {
-      throw Util.err({ kind: 'truncated', stage: 'parse', message: '转写结果被截断，可能不完整', retriable: false });
+      throw Util.err({ kind: 'truncated', stage: 'parse', msgKey: 'err.truncated', retriable: false });
     }
     if (!t.trim() && (seconds === null || seconds > 0)) {
-      throw Util.err({ kind: 'empty', stage: 'parse', message: '未识别到有效语音（疑似静音/纯音乐）', retriable: false });
+      throw Util.err({ kind: 'empty', stage: 'parse', msgKey: 'err.empty', retriable: false });
     }
     return { text: t, seconds: seconds, finishReason: finishReason, raw: raw };
   }
@@ -1447,7 +2083,8 @@ pre#preview{
       return Util.err({
         kind: 'network',
         stage: 'request',
-        message: '网络请求失败，请检查网络/代理/防火墙' + (reason ? '（' + reason + '）' : ''),
+        msgKey: 'err.network',
+        msgVars: { paren: reason ? T('err.paren', { s: reason }) : '' },
         retriable: true
       });
     }
@@ -1460,10 +2097,10 @@ pre#preview{
       var res;
       if (transport) { res = await race(transport(ctx.url, init)); }
       else if (typeof fetch === 'function') { res = await race(fetch(ctx.url, init)); }
-      else { throw Util.err({ kind: 'unsupported', stage: 'request', message: '当前环境不支持 fetch' }); }
+      else { throw Util.err({ kind: 'unsupported', stage: 'request', msgKey: 'err.noFetch' }); }
 
       if (!res || typeof res !== 'object') {
-        throw Util.err({ kind: 'unknown', stage: 'request', message: '响应对象无效', retriable: false });
+        throw Util.err({ kind: 'unknown', stage: 'request', msgKey: 'err.badResponse', retriable: false });
       }
 
       if (res.ok !== true) {
@@ -1616,10 +2253,10 @@ pre#preview{
     var signal = opts.signal || null;
 
     if (!key) {
-      throw Util.err({ kind: 'config', stage: 'request', message: '请先填写 API Key', retriable: false });
+      throw Util.err({ kind: 'config', stage: 'request', msgKey: 'err.noKey', retriable: false });
     }
     if (!b64) {
-      throw Util.err({ kind: 'config', stage: 'request', message: '缺少音频数据', retriable: false });
+      throw Util.err({ kind: 'config', stage: 'request', msgKey: 'err.noAudio', retriable: false });
     }
 
     var ctx = {
@@ -1658,7 +2295,8 @@ pre#preview{
         kind: 'http',
         httpStatus: 429,
         code: lastErr.code,
-        message: lastErr.message && lastErr.message.indexOf('限流') >= 0 ? lastErr.message : '限流，稍后重试',
+        msgKey: 'err.http429',
+        msgVars: lastErr.msgVars || null,
         retriable: false,
         stage: 'request'
       });
@@ -1667,7 +2305,7 @@ pre#preview{
       lastErr.retriable = false;
       throw lastErr;
     }
-    throw Util.err({ kind: 'unknown', stage: 'request', message: '请求失败', retriable: false });
+    throw Util.err({ kind: 'unknown', stage: 'request', msgKey: 'err.failed', retriable: false });
   }
 
   ns.ApiClient = {
@@ -1689,16 +2327,18 @@ pre#preview{
   'use strict';
 
   var C = ns.CONFIG;
+  var T = ns.I18N.t,
+    TP = ns.I18N.tp;
 
   // 方案 §5.4 的可读性阈值（"每 200 字内插一个换行"），不在 §4 硬参数表内，故留在本模块。
   var LINE_SOFT_MAX = 200;
   var ZWSP = '\u200B';
-  // 模板元信息行内分隔用两个全角空格，与 方案 §5.4 模板逐字对齐。
-  var PAD = '\u3000\u3000';
   // 行首命中这些标记会被 md 解析器当成结构，插入零宽空格降级为普通文本。
   var HEAD_MARK_RE = /^(---|\*\*\*|___|```|#{1,6}\s)/;
   var WIN_ILLEGAL_RE = /[\u0000-\u001F\u007F<>:"\/\\|?*]/g;
   var SENTENCE_BREAK_RE = /[。！？；]/;
+  // 英文断句要求标点后跟空白，避免把小数、域名、缩写切开；折行只影响可读性，不改文字。
+  var EN_BREAK_RE = /[.!?;]/;
 
   var MD_MIME = 'text/markdown;charset=utf-8';
   var MD_ACCEPT = { 'text/markdown': ['.md'] };
@@ -1725,23 +2365,23 @@ pre#preview{
   // ---------- Render ----------
 
   function formatDuration(sec) {
-    if (sec == null || sec === '') { return '—'; }
+    if (sec == null || sec === '') { return T('dash'); }
     var s = Number(sec);
-    if (!isFinite(s) || s < 0) { return '—'; }
+    if (!isFinite(s) || s < 0) { return T('dash'); }
     s = Math.floor(s);
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);
     var ss = s % 60;
-    if (h > 0) { return h + ' 小时 ' + pad2(m) + ' 分 ' + pad2(ss) + ' 秒'; }
-    if (m > 0) { return m + ' 分 ' + pad2(ss) + ' 秒'; }
-    return ss + ' 秒';
+    if (h > 0) { return T('dur.hms', { h: h, m: pad2(m), s: pad2(ss) }); }
+    if (m > 0) { return T('dur.ms', { m: m, s: pad2(ss) }); }
+    return T('dur.s', { s: ss });
   }
 
   /* 十进制单位：与磁盘/资源管理器显示一致，用户对账时不易产生 1.5 倍偏差。 */
   function formatSize(bytes) {
     if (bytes == null || bytes === '') { return '—'; }
     var n = Number(bytes);
-    if (!isFinite(n) || n < 0) { return '—'; }
+    if (!isFinite(n) || n < 0) { return T('dash'); }
     if (n >= 1000000) { return (n / 1000000).toFixed(1) + ' MB'; }
     return (n / 1000).toFixed(1) + ' KB';
   }
@@ -1780,11 +2420,11 @@ pre#preview{
       return c;
     }
     if (list.length === 1) {
-      var base = stripExt(nameOf(list[0])) || '转写';
-      return base + '_转写.md';
+      var base = stripExt(nameOf(list[0])) || T('fname.base');
+      return T('fname.single', { base: base });
     }
     // 本地时间而非 UTC：文件名要能被用户按自己看到的时钟对上。
-    return '转写记录_' + stampLocal(new Date()) + '.md';
+    return T('fname.multi', { stamp: stampLocal(new Date()) });
   }
 
   function pickPrice(meta) {
@@ -1804,6 +2444,13 @@ pre#preview{
       ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
   }
 
+  function isBreakAt(line, i) {
+    if (SENTENCE_BREAK_RE.test(line.charAt(i))) { return true; }
+    var ch = line.charAt(i);
+    if (!EN_BREAK_RE.test(ch)) { return false; }
+    return i + 1 >= line.length || /\s/.test(line.charAt(i + 1));
+  }
+
   /* 按句末标点累积；单句本身超长时硬切，保证每行 ≤ LINE_SOFT_MAX，且不增删字符。 */
   function wrapLongLine(line) {
     if (line.length <= LINE_SOFT_MAX) { return [line]; }
@@ -1811,7 +2458,7 @@ pre#preview{
     var cur = '';
     for (var i = 0; i < line.length; i++) {
       cur += line.charAt(i);
-      if (SENTENCE_BREAK_RE.test(line.charAt(i))) {
+      if (isBreakAt(line, i)) {
         parts.push(cur);
         cur = '';
       }
@@ -1858,26 +2505,29 @@ pre#preview{
   }
 
   function sizeLine(r) {
-    var s = '- 大小：' + formatSize(r.sizeBytes);
+    var s = T('md.size', { size: formatSize(r.sizeBytes) });
     if (typeof r.durationSec === 'number' && isFinite(r.durationSec)) {
-      s += PAD + '时长：' + formatDuration(r.durationSec);
+      s += T('md.durPart', { sep: mdSep(), dur: formatDuration(r.durationSec) });
     }
     return s;
   }
 
+  function mdSep() { return T('md.sep'); }
+
   function processLine(r) {
-    if (r.mode === 'direct') { return '- 处理：直传'; }
-    if (r.mode === 'transcoded') { return '- 处理：转 ' + sampleRateText() + ' 单声道'; }
+    var rate = sampleRateText();
+    if (r.mode === 'direct') { return T('md.procDirect'); }
+    if (r.mode === 'transcoded') { return T('md.procTranscoded', { rate: rate }); }
     if (r.mode === 'sliced') {
       var n = Number(r.segmentCount);
-      return '- 处理：转 ' + sampleRateText() + ' 单声道 → 切 ' + (isFinite(n) ? n : 0) + ' 段';
+      return TP('md.procSliced', n, { rate: rate, n: isFinite(n) ? n : 0 });
     }
     return '';
   }
 
   function reasonOf(r) {
-    var msg = r && r.error && r.error.message ? redactText(r.error.message) : '';
-    return msg ? ' —— ' + msg : '';
+    var msg = r && r.error ? redactText(ns.I18N.errText(r.error)) : '';
+    return msg ? T('md.reason', { msg: msg }) : '';
   }
 
   function missingSegments(r) {
@@ -1889,17 +2539,15 @@ pre#preview{
 
   function statusLine(r) {
     var ms = Number(r.elapsedMs);
-    var elapsed = (isFinite(ms) && ms > 0) ? PAD + '耗时：' + (ms / 1000).toFixed(1) + ' s' : '';
-    var st = r.status;
-    if (st === 'success') { return '- 状态：成功' + elapsed; }
-    if (st === 'partial') {
-      var miss = missingSegments(r);
-      var detail = miss.length ? '（缺第 ' + miss.join('、') + ' 段）' : '';
-      return '- 状态：部分失败' + detail + elapsed;
-    }
-    if (st === 'canceled') { return '- 状态：已取消' + elapsed; }
-    if (st === 'unsupported') { return '- 状态：失败' + reasonOf(r) + elapsed; }
-    return '- 状态：失败' + reasonOf(r) + elapsed;
+    var elapsed = (isFinite(ms) && ms > 0) ? T('md.elapsed', { sep: mdSep(), s: (ms / 1000).toFixed(1) }) : '';
+    var miss = missingSegments(r);
+    var word = T('md.st.failed');
+    if (r.status === 'success') { word = T('md.st.success'); }
+    else if (r.status === 'partial') { word = T('md.st.partial'); }
+    else if (r.status === 'canceled') { word = T('md.st.canceled'); }
+    var detail = (r.status === 'partial' && miss.length) ? T('md.missing', { segs: miss.join(T('list.sep')) }) : '';
+    var reason = (r.status === 'success' || r.status === 'partial' || r.status === 'canceled') ? '' : reasonOf(r);
+    return T('md.status', { word: word, elapsed: detail + reason + elapsed });
   }
 
   /* 关闭元信息后成功项只留正文；失败项仍须注明原因（方案 §5.4） */
@@ -1909,12 +2557,11 @@ pre#preview{
     if (st === 'partial') {
       var miss = missingSegments(r);
       return miss.length
-        ? '该文件部分内容缺失（缺第 ' + miss.join('、') + ' 段），正文可能不完整'
-        : '该文件部分内容缺失，正文可能不完整';
+        ? T('md.notePart1', { segs: miss.join(T('list.sep')) })
+        : T('md.notePart2');
     }
-    if (st === 'canceled') { return '该文件未完成：已取消'; }
-    if (st === 'unsupported') { return '该文件未能转写' + reasonOf(r); }
-    return '该文件未能转写' + reasonOf(r);
+    if (st === 'canceled') { return T('md.noteCanceled'); }
+    return T('md.noteFailed', { reason: reasonOf(r) });
   }
 
   function buildMarkdown(results, meta) {
@@ -1944,19 +2591,21 @@ pre#preview{
       if (isFinite(o) && o > 0) { overlapSec += o; }
     });
 
-    var lines = ['# 语音转写记录'];
+    var sep = mdSep();
+    var lines = [T('md.title')];
 
     if (showMeta) {
       var cost = (billSec * price / 3600).toFixed(2);
-      var costLine = '- 音频总时长：' + formatDuration(totalSec) + PAD +
-        '预估费用：约 ¥' + cost + '（¥' + formatPrice(price) + '/小时，以账单为准）';
+      var costLine = T('md.total', {
+        dur: formatDuration(totalSec), sep: sep, cost: cost, price: formatPrice(price)
+      });
       if (overlapSec > 0) {
-        costLine += PAD + '（含 ' + overlapSec.toFixed(1) + ' s 重叠，略高于录音时长）';
+        costLine += T('md.overlap', { sep: sep, s: overlapSec.toFixed(1) });
       }
       lines.push('');
-      lines.push('- 生成时间：' + formatDateTime(at));
-      lines.push('- 模型：' + model + PAD + '语种参数：' + lang);
-      lines.push('- 文件：' + list.length + ' 个（成功 ' + okCount + ' / 失败 ' + failCount + '）');
+      lines.push(T('md.generated', { dt: formatDateTime(at) }));
+      lines.push(T('md.model', { model: model, sep: sep, lang: lang }));
+      lines.push(T('md.files', { n: list.length, ok: okCount, fail: failCount }));
       lines.push(costLine);
       lines.push('');
       lines.push('---');
@@ -1966,7 +2615,7 @@ pre#preview{
       r = r || {};
       var note = '';
       lines.push('');
-      lines.push('## ' + (i + 1) + '. ' + nameOf(r));
+      lines.push(T('md.h2', { i: i + 1, name: nameOf(r) }));
       lines.push('');
       if (showMeta) {
         lines.push(sizeLine(r));
@@ -1999,9 +2648,11 @@ pre#preview{
       typeof window.showSaveFilePicker === 'function';
   }
 
-  function errOf(e, fallbackMsg) {
-    var msg = (e && e.message) ? String(e.message) : '';
-    return ns.Util.err({ kind: 'save', stage: 'save', message: redactText(msg || fallbackMsg) });
+  /* 浏览器给的 message 只在本次语言下可读，故有原文时不做 msgKey，避免切换语言后覆盖成通用文案。 */
+  function errOf(e, key) {
+    var raw = (e && e.message) ? redactText(String(e.message)) : '';
+    if (raw) { return ns.Util.err({ kind: 'save', stage: 'save', message: raw }); }
+    return ns.Util.err({ kind: 'save', stage: 'save', msgKey: key });
   }
 
   function downloadFallback(blob, fileName) {
@@ -2009,7 +2660,7 @@ pre#preview{
       var doc = (typeof document !== 'undefined') ? document : null;
       if (!doc || typeof doc.createElement !== 'function' ||
           typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
-        throw new Error('当前环境不支持另存为或下载');
+        throw new Error(T('err.saveUnsupported'));
       }
       var url = URL.createObjectURL(blob);
       var a = doc.createElement('a');
@@ -2025,7 +2676,7 @@ pre#preview{
       }, REVOKE_DELAY_MS);
       return { ok: true, mode: 'download', name: fileName };
     } catch (e) {
-      return { ok: false, mode: 'none', name: fileName, error: errOf(e, '保存失败') };
+      return { ok: false, mode: 'none', name: fileName, error: errOf(e, 'err.saveFailed') };
     }
   }
 
@@ -2038,16 +2689,16 @@ pre#preview{
     if (n === 'NotAllowedError' || n === 'SecurityError') {
       return downloadFallback(blob, fileName);
     }
-    return { ok: false, mode: 'none', name: fileName, error: errOf(e, '保存失败') };
+    return { ok: false, mode: 'none', name: fileName, error: errOf(e, 'err.saveFailed') };
   }
 
   function saveMarkdown(text, name) {
-    var fileName = String(name == null ? '' : name) || '转写记录.md';
+    var fileName = String(name == null ? '' : name) || T('fname.fallback');
     var blob;
     try {
       blob = new Blob([String(text == null ? '' : text)], { type: MD_MIME });
     } catch (e) {
-      return Promise.resolve({ ok: false, mode: 'none', name: fileName, error: errOf(e, '保存失败') });
+      return Promise.resolve({ ok: false, mode: 'none', name: fileName, error: errOf(e, 'err.saveFailed') });
     }
 
     if (!hasPicker()) {
@@ -2141,6 +2792,7 @@ pre#preview{
   'use strict';
 
   var C = ns.CONFIG, U = ns.Util;
+  var T = ns.I18N.t, TP = ns.I18N.tp;
   var settings = ns.Config.loadSettings().settings;
   var settingsWarned = false;
   var showTimer = 0;
@@ -2273,26 +2925,26 @@ pre#preview{
   /* ---------- 单文件主链路（方案 §8） ---------- */
   function checkCancel(it) {
     if (it.canceled || state.canceling) {
-      var e = U.err({ kind: 'abort', stage: 'queue', message: '已取消' });
+      var e = U.err({ kind: 'abort', stage: 'queue', msgKey: 'err.canceled' });
       throw e;
     }
   }
 
   function fail(it, e) {
     var err = (e && e.kind) ? e : U.err({
-      kind: 'unknown', stage: 'queue', message: (e && e.message) || '未知错误'
+      kind: 'unknown', stage: 'queue', message: ns.I18N.errText(e)
     });
     it.status = err.kind === 'abort' ? 'canceled' : 'failed';
     it.error = err;
     it.segments.forEach(function (s) { if (s.status !== 'done') { s.status = it.status === 'canceled' ? 'canceled' : 'failed'; } });
     it.progress = 1;
-    log(it.name + '：' + err.message, 'err');
+    logT('log.fileErr', { name: it.name, msg: function () { return ns.I18N.errText(err); } }, 'err');
   }
 
   function processFile(it) {
     if (it.canceled || state.canceling) {
       it.status = 'canceled';
-      it.error = U.err({ kind: 'abort', stage: 'queue', message: '已取消' });
+      it.error = U.err({ kind: 'abort', stage: 'queue', msgKey: 'err.canceled' });
       return Promise.resolve();
     }
     it.status = 'analyzing';
@@ -2300,7 +2952,7 @@ pre#preview{
     it.abort = new AbortController();
     it.progress = 0.02;
     emit('state');
-    log('开始处理：' + it.name);
+    logT('log.startFile', { name: it.name });
 
     return ns.AudioEngine.analyze(it.file).then(function (a) {
       checkCancel(it);
@@ -2308,12 +2960,12 @@ pre#preview{
         it.status = 'unsupported';
         it.durationSec = null;
         it.progress = 1;
-        it.error = U.err({ kind: 'unsupported', stage: 'analyze', message: '浏览器不支持该编码，请先转为 mp3/wav' });
-        log(it.name + '：' + it.error.message, 'warn');
+        it.error = U.err({ kind: 'unsupported', stage: 'analyze', msgKey: 'err.unsupported' });
+        logT('log.fileErr', { name: it.name, msg: function () { return ns.I18N.errText(it.error); } }, 'warn');
         return;
       }
       it.durationSec = a.duration;
-      if (a.warning) { log(it.name + '：' + a.warning, 'warn'); }
+      if (a.warning) { logT('log.fileErr', { name: it.name, msg: function () { return T(a.warning.msgKey, a.warning.msgVars); } }, 'warn'); }
       it.progress = 0.1;
       emit('state');
 
@@ -2381,9 +3033,9 @@ pre#preview{
         s.status = 'pending';
         return s;
       });
-      log(it.name + '：分 ' + it.segmentCount + ' 段' + (plan.degraded ? '（含降级切点）' : ''));
+      logT('log.split', { name: it.name, n: it.segmentCount, extra: function () { return plan.degraded ? T('log.splitDegraded') : ''; } });
       emit('state');
-      if (plan.degraded) { log(it.name + '：未找到合格静音谷，已用最安静点并在段间加重叠', 'warn'); }
+      if (plan.degraded) { logT('log.noValley', { name: it.name }, 'warn'); }
       return runSegments(it, pcmRef);
     }).then(function () {
       pcmRef = null;
@@ -2418,17 +3070,17 @@ pre#preview{
         enc = ns.AudioEngine.encodeSegment(pcm, seg);
       } catch (e) {
         if (e && e.kind === 'slice' && !seg.bisected) {
-          return bisect(it, pcm, seg, '切片超限');
+          return bisect(it, pcm, seg, 'why.sliceOver');
         }
         seg.status = 'failed';
-        seg.error = (e && e.kind) ? e : U.err({ kind: 'encode', stage: 'encode', message: '编码失败' });
+        seg.error = (e && e.kind) ? e : U.err({ kind: 'encode', stage: 'encode', msgKey: 'err.encode' });
         return Promise.resolve();
       }
     }
     seg.status = 'requesting';
     emit('state');
     var secs = enc.seconds;
-    log(it.name + ' 第 ' + seg.index + '/' + it.segmentCount + ' 段：请求中（' + fmtSec(secs) + '）');
+    logT('log.segReq', { name: it.name, i: seg.index, n: it.segmentCount, dur: function () { return fmtSec(secs); } });
 
     return ns.ApiClient.transcribe({
       b64: enc.b64,
@@ -2447,49 +3099,49 @@ pre#preview{
       it.progress = 0.3 + 0.7 * (it.doneCount / Math.max(1, it.segmentCount));
       emit('state');
       emit('progress', it);
-      log(it.name + ' 第 ' + seg.index + ' 段：完成');
+      logT('log.segDone', { name: it.name, i: seg.index });
     }, function (e) {
       if (e && e.kind === 'abort') {
         seg.status = 'canceled';
         return;
       }
       if (e && e.kind === 'truncated' && !seg.bisected) {
-        return bisectOrFromFile(it, pcm, seg, '输出截断');
+        return bisectOrFromFile(it, pcm, seg, 'why.truncated');
       }
       /* 400 单靠“再发一次”无意义；按方案 §9 先重切一次，仍 400 才落失败 */
       if (e && e.kind === 'http' && e.httpStatus === 400 && !seg.bisected) {
-        return bisectOrFromFile(it, pcm, seg, '服务端 400');
+        return bisectOrFromFile(it, pcm, seg, 'why.http400');
       }
       seg.status = 'failed';
       seg.error = e;
-      log(it.name + ' 第 ' + seg.index + ' 段失败：' + ((e && e.message) || '未知错误'), 'err');
+      logT('log.segFail', { name: it.name, i: seg.index, msg: function () { return ns.I18N.errText(e); } }, 'err');
     });
   }
 
   /* 直传段无 PCM，二分前必须先转码，否则会把 44 B 空 WAV 当半段发出 */
-  function bisectOrFromFile(it, pcm, seg, why) {
-    if (pcm) { return bisect(it, pcm, seg, why); }
-    log(it.name + ' 第 ' + seg.index + ' 段：' + why + '，先转码再二分重试', 'warn');
+  function bisectOrFromFile(it, pcm, seg, whyKey) {
+    if (pcm) { return bisect(it, pcm, seg, whyKey); }
+    logT('log.segRetryTranscode', { name: it.name, i: seg.index, why: function () { return T(whyKey); } }, 'warn');
     return ns.AudioEngine.decodeToMono16k(it.file).then(function (dec) {
       checkCancel(it);
       /* 已实际转码重切，报告不能再写「直传」 */
       if (it.mode === 'direct') { it.mode = 'transcoded'; }
-      return bisect(it, dec.pcm, seg, why);
+      return bisect(it, dec.pcm, seg, whyKey);
     }).catch(function (e) {
       if (e && e.kind === 'abort') {
         seg.status = 'canceled';
         return;
       }
       seg.status = 'failed';
-      seg.error = (e && e.kind) ? e : U.err({ kind: 'decode', stage: 'decode', message: '二分重切失败' });
-      log(it.name + ' 第 ' + seg.index + ' 段：二分重切失败（' + seg.error.message + '）', 'err');
+      seg.error = (e && e.kind) ? e : U.err({ kind: 'decode', stage: 'decode', msgKey: 'err.bisectFail' });
+      logT('log.segBisectFail', { name: it.name, i: seg.index, msg: function () { return ns.I18N.errText(seg.error); } }, 'err');
     });
   }
 
   /* 截断/超限时二分重切一次（方案 §9） */
-  function bisect(it, pcm, seg, why) {
+  function bisect(it, pcm, seg, whyKey) {
     seg.bisected = true;
-    log(it.name + ' 第 ' + seg.index + ' 段：' + why + '，自动二分重试', 'warn');
+    logT('log.segRetryBisect', { name: it.name, i: seg.index, why: function () { return T(whyKey); } }, 'warn');
     var mid = seg.start + (seg.end - seg.start) / 2;
     var midSample = Math.round(mid * C.SAMPLE_RATE);
     var halfA = makeSeg(seg.index, seg.start, mid, seg.degraded);
@@ -2516,7 +3168,7 @@ pre#preview{
         seg.partial = true;
         seg.text = (okA ? halfA.text : '') + (okB ? halfB.text : '');
         seg.seconds = (halfA.seconds || 0) + (halfB.seconds || 0);
-        seg.error = U.err({ kind: 'truncated', stage: 'parse', message: '重启后仍有一段失败，结果可能不完整' });
+        seg.error = U.err({ kind: 'truncated', stage: 'parse', msgKey: 'err.partial' });
       } else {
         seg.status = halfA.status === 'canceled' || halfB.status === 'canceled' ? 'canceled' : 'failed';
         seg.error = halfA.error || halfB.error || null;
@@ -2543,10 +3195,10 @@ pre#preview{
     it.progress = 1;
     if (canceled.length) {
       it.status = 'canceled';
-      it.error = it.error || U.err({ kind: 'abort', stage: 'queue', message: '已取消' });
+      it.error = it.error || U.err({ kind: 'abort', stage: 'queue', msgKey: 'err.canceled' });
     } else if (failed.length) {
       it.status = done.length ? 'partial' : 'failed';
-      it.error = it.error || (failed[0] && failed[0].error) || U.err({ kind: 'unknown', stage: 'queue', message: '转写失败' });
+      it.error = it.error || (failed[0] && failed[0].error) || U.err({ kind: 'unknown', stage: 'queue', msgKey: 'err.transcribeFailed' });
     } else {
       it.status = 'success';
       it.error = null;
@@ -2557,12 +3209,12 @@ pre#preview{
   function start() {
     if (state.running) { return; }
     var pending = state.files.filter(function (it) { return it.status === 'pending'; });
-    if (!pending.length) { toast('没有待处理的文件'); return; }
-    if (!ns.ApiClient.hasKey()) { toast('请先配置 API Key'); inputEl('keyInput').focus(); return; }
+    if (!pending.length) { toastT('toast.noFiles'); return; }
+    if (!ns.ApiClient.hasKey()) { toastT('toast.keyFirst'); inputEl('keyInput').focus(); return; }
     state.running = true;
     state.canceling = false;
     emit('state');
-    log('开始转写：' + pending.length + ' 个文件');
+    logT('log.runStart', { n: pending.length }, '', pending.length);
 
     var chain = Promise.resolve();
     pending.forEach(function (it) {
@@ -2575,14 +3227,14 @@ pre#preview{
       state.canceling = false;
       emit('state');
       emit('all-done');
-      log('本轮结束');
+      logT('log.runEnd');
     }, function (e) {
       pending.forEach(function (it) { it.inRun = false; });
       state.running = false;
       state.canceling = false;
       emit('state');
       emit('all-done');
-      log('队列异常：' + ((e && e.message) || '未知错误'), 'err');
+      logT('log.queueErr', { msg: function () { return ns.I18N.errText(e); } }, 'err');
     });
   }
 
@@ -2595,19 +3247,19 @@ pre#preview{
       it.canceled = true;
       if (it.abort) { it.abort.abort(); }
     });
-    log('已取消：在飞请求中断，已完成结果保留', 'warn');
+    logT('log.canceled', null, 'warn');
     emit('state');
   }
 
   function retry(id) {
-    if (state.running) { toast('请等待当前任务结束'); return; }
+    if (state.running) { toastT('toast.busy'); return; }
     var it = findItem(id);
     if (!it) { return; }
-    if (it.status === 'unsupported') { toast('该格式不支持，请先转为 mp3/wav'); return; }
+    if (it.status === 'unsupported') { toastT('toast.unsupported'); return; }
     /* 门槛失败重试会跳过 analyze 直接解码，有 OOM 风险且违反 §4 */
-    if (it.error && it.error.kind === 'limit') { toast('该文件超出处理门槛，请先切分后再添加'); return; }
+    if (it.error && it.error.kind === 'limit') { toastT('toast.overLimit'); return; }
     if (it.status !== 'failed' && it.status !== 'partial' && it.status !== 'canceled') { return; }
-    if (!ns.ApiClient.hasKey()) { toast('请先配置 API Key'); return; }
+    if (!ns.ApiClient.hasKey()) { toastT('toast.keyFirst'); return; }
 
     var doneMap = {};
     it.segments.forEach(function (s) {
@@ -2623,7 +3275,7 @@ pre#preview{
     state.running = true;
     state.canceling = false;
     emit('state');
-    log('重试：' + it.name + '（仅失败/未完成段）');
+    logT('log.retry', { name: it.name });
 
     var p;
     if (it.mode === 'direct') {
@@ -2644,7 +3296,7 @@ pre#preview{
       it.progress = 1;
       emit('state');
       emit('all-done');
-      log('重试结束：' + it.name);
+      logT('log.retryEnd', { name: it.name });
     });
   }
 
@@ -2711,12 +3363,12 @@ pre#preview{
       it.canceled = true;
       it.removeAfter = true;
       if (it.abort) { it.abort.abort(); }
-      toast('已中止并移除');
+      toastT('toast.abortRemove');
     } else if (state.running && it.inRun && !finishedStatus(it.status)) {
       /* 已排队未开始：链条仍持引用，只删列表会照常上传计费 */
       it.canceled = true;
       removeNow(it);
-      toast('已移除，不会上传');
+      toastT('toast.removed');
     } else {
       removeNow(it);
     }
@@ -2792,60 +3444,100 @@ pre#preview{
   function fmtSize(b) { return ns.Render.formatSize(b || 0); }
 
   var logEl, toastEl, toastTimer = 0;
+  var LOG_MAX = 300;
+  /* 日志按结构化记录保留，切换语言时整体重放：日志里不许出现中英混排。
+     redact 统一在渲染时做一次，覆盖插值进来的服务端 detail。 */
+  var logRecords = [];
+
+  function pushLog(rec) {
+    logRecords.push(rec);
+    if (logRecords.length > LOG_MAX) { logRecords.splice(0, logRecords.length - LOG_MAX); }
+    paintLog();
+  }
+
   function log(msg, level) {
-    var text = ns.ApiClient.redact(String(msg == null ? '' : msg));
+    pushLog({ at: Date.now(), text: String(msg == null ? '' : msg), level: level || '' });
+  }
+
+  function logT(key, vars, level, pluralN) {
+    pushLog({ at: Date.now(), key: key, vars: vars || null, level: level || '', plural: pluralN });
+  }
+
+  /* 一行由多段文案拼成时（如「已添加 2 个，重复 1 个已忽略」），各段按 key 保留，
+     切换语言后要用当前语言的连接符重新拼接，不能在写入时先拼成字符串。 */
+  function logParts(parts, level) {
+    pushLog({ at: Date.now(), parts: parts, level: level || '' });
+  }
+
+  function renderPart(p) {
+    return p.plural == null ? T(p.key, p.vars) : TP(p.key, p.plural, p.vars);
+  }
+
+  function recText(rec) {
+    if (rec.parts) { return rec.parts.map(renderPart).join(T('toast.join')); }
+    return rec.key ? renderPart(rec) : rec.text;
+  }
+
+  function paintLog() {
     if (!logEl) { return; }
-    var d = document.createElement('div');
-    var t = document.createElement('span');
-    t.className = 't';
-    t.textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
-    d.appendChild(t);
-    d.appendChild(document.createTextNode(text));
-    if (level === 'err') { d.style.color = 'var(--err)'; }
-    if (level === 'warn') { d.style.color = 'var(--warn)'; }
-    logEl.appendChild(d);
-    while (logEl.children.length > 300) { logEl.removeChild(logEl.firstChild); }
+    logEl.textContent = '';
+    logRecords.forEach(function (rec) {
+      var text = recText(rec);
+      var d = document.createElement('div');
+      var t = document.createElement('span');
+      t.className = 't';
+      t.textContent = new Date(rec.at).toLocaleTimeString(ns.I18N.timeLocale(), { hour12: false });
+      d.appendChild(t);
+      d.appendChild(document.createTextNode(ns.ApiClient.redact(text)));
+      if (rec.level === 'err') { d.style.color = 'var(--err)'; }
+      if (rec.level === 'warn') { d.style.color = 'var(--warn)'; }
+      logEl.appendChild(d);
+    });
     logEl.scrollTop = logEl.scrollHeight;
   }
 
-  function toast(msg) {
+  function clearLog() {
+    logRecords.length = 0;
+    if (logEl) { logEl.textContent = ''; }
+  }
+
+  function showToast(text) {
     if (!toastEl) { return; }
-    toastEl.textContent = ns.ApiClient.redact(String(msg || ''));
+    toastEl.textContent = ns.ApiClient.redact(String(text || ''));
     toastEl.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { toastEl.hidden = true; }, 2600);
   }
 
+  function toast(msg) { showToast(msg); }
+
+  function toastT(key, vars, pluralN) {
+    showToast(pluralN == null ? T(key, vars) : TP(key, pluralN, vars));
+  }
+
   function statusInfo(it) {
-    if (it.status === 'pending') { return { text: '等待', cls: '' }; }
-    if (it.status === 'analyzing') { return { text: '分析中…', cls: 'run' }; }
+    if (it.status === 'pending') { return { text: T('st.pending'), cls: '' }; }
+    if (it.status === 'analyzing') { return { text: T('st.analyzing'), cls: 'run' }; }
     if (it.status === 'running') {
-      var pct = Math.round((it.progress || 0) * 100);
-      return { text: '转写中 ' + pct + '%', cls: 'run' };
+      return { text: T('st.running', { pct: Math.round((it.progress || 0) * 100) }), cls: 'run' };
     }
     if (it.status === 'success') {
-      return { text: '✅ 完成 ' + (it.elapsedMs / 1000).toFixed(1) + 's', cls: 'ok' };
+      return { text: T('st.success', { s: (it.elapsedMs / 1000).toFixed(1) }), cls: 'ok' };
     }
     if (it.status === 'partial') {
-      return { text: '⚠ 部分失败（缺第 ' + it.failedSegments.join('、') + ' 段）', cls: 'warn' };
+      return { text: T('st.partial', { segs: it.failedSegments.join(T('list.sep')) }), cls: 'warn' };
     }
-    if (it.status === 'failed') {
-      return { text: '✖ 失败', cls: 'err' };
-    }
-    if (it.status === 'canceled') {
-      return { text: '⏹ 已取消', cls: 'warn' };
-    }
-    if (it.status === 'unsupported') {
-      return { text: '⚠ 不支持', cls: 'warn' };
-    }
+    if (it.status === 'failed') { return { text: T('st.failed'), cls: 'err' }; }
+    if (it.status === 'canceled') { return { text: T('st.canceled'), cls: 'warn' }; }
+    if (it.status === 'unsupported') { return { text: T('st.unsupported'), cls: 'warn' }; }
     return { text: it.status, cls: '' };
   }
 
   function modeText(it) {
-    if (it.mode === 'direct') { return '直传'; }
-    if (it.mode === 'transcoded') { return '转单声道'; }
-    if (it.mode === 'sliced') { return '转单声道 → 切 ' + it.segmentCount + ' 段'; }
-    return '—';
+    if (it.mode === 'direct') { return T('mode.direct'); }
+    if (it.mode === 'transcoded') { return T('mode.transcoded'); }
+    if (it.mode === 'sliced') { return TP('mode.sliced', it.segmentCount, { n: it.segmentCount }); }
+    return T('dash');
   }
 
   function render() {
@@ -2873,7 +3565,7 @@ pre#preview{
 
       var c3 = document.createElement('td');
       c3.className = 'num';
-      c3.textContent = it.durationSec != null ? fmtSec(it.durationSec) : '—';
+      c3.textContent = it.durationSec != null ? fmtSec(it.durationSec) : T('dash');
       tr.appendChild(c3);
 
       var c4 = document.createElement('td');
@@ -2887,7 +3579,7 @@ pre#preview{
       span.textContent = st.text;
       c5.appendChild(span);
       if (it.error && (it.status === 'failed' || it.status === 'partial' || it.status === 'unsupported')) {
-        span.title = it.error.message;
+        span.title = ns.I18N.errText(it.error);
       }
       if (it.status === 'running') {
         var bar = document.createElement('div');
@@ -2907,21 +3599,21 @@ pre#preview{
       if (hasRaw) {
         var jb = document.createElement('button');
         jb.className = 'ghost small';
-        jb.textContent = 'JSON';
-        jb.title = '查看原始响应（已脱敏）';
+        jb.textContent = T('row.json');
+        jb.title = T('row.jsonTitle');
         jb.onclick = function () { showRaw(it); };
         c6.appendChild(jb);
       }
       if (it.status === 'failed' || it.status === 'partial' || it.status === 'canceled') {
         var rb = document.createElement('button');
         rb.className = 'ghost small';
-        rb.textContent = '重试';
+        rb.textContent = T('row.retry');
         rb.onclick = function () { retry(it.id); };
         c6.appendChild(rb);
       }
       var xb = document.createElement('button');
       xb.className = 'ghost small';
-      xb.textContent = '移除';
+      xb.textContent = T('row.remove');
       xb.disabled = it.removeAfter === true;
       xb.onclick = function () { remove(it.id); };
       c6.appendChild(xb);
@@ -2949,13 +3641,13 @@ pre#preview{
     var inp = btn('keyInput');
     var dot = btn('keyState');
     if (has) {
-      masked.textContent = ns.ApiClient.keyMask() || '已配置';
+      masked.textContent = ns.ApiClient.keyMask() || T('key.maskShort');
       masked.hidden = false;
       inp.hidden = true;
       btn('btnKeySave').hidden = true;
       btn('btnKeyChange').hidden = false;
       btn('btnKeyShow').hidden = false;
-      dot.textContent = '● 就绪';
+      dot.textContent = T('key.ready');
       dot.className = 'dot ok';
     } else {
       masked.hidden = true;
@@ -2965,7 +3657,7 @@ pre#preview{
       btn('btnKeySave').hidden = false;
       btn('btnKeyChange').hidden = true;
       btn('btnKeyShow').hidden = true;
-      dot.textContent = '○ 未配置';
+      dot.textContent = T('key.unset');
       dot.className = 'dot';
     }
     updateButtons();
@@ -2995,11 +3687,11 @@ pre#preview{
   function saveKey() {
     var r = ns.ApiClient.setKey(btn('keyInput').value);
     btn('keyInput').value = '';
-    if (!r.ok) { toast(r.warning || '请输入 API Key'); btn('keyInput').focus(); return; }
+    if (!r.ok) { toast(r.warning || T('key.empty')); btn('keyInput').focus(); return; }
     if (r.warning) { toast(r.warning); }
     hideKeyTemporarily();
     syncKeyUI();
-    log('API Key 已配置（已脱敏）');
+    logT('log.keySet');
   }
 
   function hideKeyTemporarily() {
@@ -3012,7 +3704,7 @@ pre#preview{
     ns.ApiClient.clearKey();
     syncKeyUI();
     btn('keyInput').focus();
-    log('已清除内存中的 API Key');
+    logT('log.keyCleared');
   }
 
   function syncSettingsToInputs() {
@@ -3037,7 +3729,7 @@ pre#preview{
     var r = ns.Config.saveSettings(settings);
     if (!r.ok && !settingsWarned) {
       settingsWarned = true;
-      toast('设置无法写入本地存储，本次有效');
+      toastT('set.unpersisted');
     }
     pool.setLimit(settings.concurrency);
   }
@@ -3102,43 +3794,44 @@ pre#preview{
 
   function addAndReport(files) {
     var r = addFiles(files);
-    var bits = [];
-    if (r.added) { bits.push('已添加 ' + r.added + ' 个'); }
-    if (r.dup) { bits.push('重复 ' + r.dup + ' 个已忽略'); }
-    if (r.ignored) { bits.push('非音频 ' + r.ignored + ' 个已忽略'); }
-    if (!bits.length) { bits.push('没有可添加的音频文件'); }
-    toast(bits.join('，'));
-    log(bits.join('，'));
+    var parts = [];
+    if (r.added) { parts.push({ key: 'toast.added', vars: { n: r.added }, plural: r.added }); }
+    if (r.dup) { parts.push({ key: 'toast.dup', vars: { n: r.dup }, plural: r.dup }); }
+    if (r.ignored) { parts.push({ key: 'toast.ignored', vars: { n: r.ignored }, plural: r.ignored }); }
+    if (!parts.length) { parts.push({ key: 'toast.noneAdded' }); }
+    var line = parts.map(renderPart).join(T('toast.join'));
+    toast(line);
+    logParts(parts);
   }
 
   function refreshPreview() {
     var md = buildMd();
     var pre = document.getElementById('preview');
-    pre.textContent = md || '（暂无内容）';
-    document.getElementById('previewInfo').textContent = md ? md.length + ' 字符' : '';
+    pre.textContent = md || T('prev.empty');
+    document.getElementById('previewInfo').textContent = md ? TP('prev.chars', md.length, { n: md.length }) : '';
   }
 
   function saveMarkdown() {
     var md = buildMd();
-    if (!md) { toast('没有可导出的内容'); return; }
+    if (!md) { toastT('toast.noExport'); return; }
     var exported = state.files.filter(function (it) { return finishedStatus(it.status); });
     var name = ns.Render.pickName(exported, btn('outName').value.trim());
     /* 必须在同一调用栈内进入 Export，选择器才能在用户激活窗口内弹出（方案 §5.2） */
     ns.Export.saveMarkdown(md, name).then(function (r) {
-      if (r && r.ok && r.mode === 'picker') { toast('已保存：' + r.name); log('已保存：' + r.name); }
-      else if (r && r.ok) { toast('已保存到浏览器下载文件夹'); log('已保存（下载）：' + r.name); }
-      else if (r && r.canceled) { toast('已取消保存，内容仍在预览区'); }
-      else { toast('保存失败：' + ((r && r.error && r.error.message) || '未知错误')); }
+      if (r && r.ok && r.mode === 'picker') { toastT('toast.saved', { name: r.name }); logT('log.saved', { name: r.name }); }
+      else if (r && r.ok) { toastT('toast.savedDownload'); logT('log.savedDownload', { name: r.name }); }
+      else if (r && r.canceled) { toastT('toast.saveCanceled'); }
+      else { toastT('toast.saveFailed', { msg: ns.I18N.errText(r && r.error) }); }
     }).catch(function (e) {
-      toast('保存失败：' + ns.ApiClient.redact((e && e.message) || '未知错误'));
+      toastT('toast.saveFailed', { msg: ns.I18N.errText(e) });
     });
   }
 
   function copyMarkdown() {
     var md = buildMd();
-    if (!md) { toast('没有可复制的内容'); return; }
+    if (!md) { toastT('toast.noCopy'); return; }
     ns.Export.copyText(md).then(function (r) {
-      toast(r.ok ? '已复制 Markdown 到剪贴板' : '复制失败，请用预览区手动复制');
+      toastT(r.ok ? 'toast.copied' : 'toast.copyFailed');
     });
   }
 
@@ -3150,11 +3843,11 @@ pre#preview{
         if (h.raw) { arr.push({ segment: h.index, half: true, raw: h.raw }); }
       });
     });
-    if (!arr.length) { toast('暂无原始响应'); return; }
+    if (!arr.length) { toastT('toast.noRaw'); return; }
     var payload = arr.length === 1 ? arr[0].raw : arr;
     var txt;
     try { txt = JSON.stringify(payload, null, 2); } catch (e) { txt = String(payload); }
-    document.getElementById('jsonTitle').textContent = '原始响应 JSON · ' + it.name;
+    document.getElementById('jsonTitle').textContent = T('json.titleWith', { name: it.name });
     document.getElementById('jsonBody').textContent = ns.ApiClient.redact(txt);
     document.getElementById('jsonModal').hidden = false;
   }
@@ -3167,6 +3860,8 @@ pre#preview{
   function init() {
     logEl = document.getElementById('log');
     toastEl = document.getElementById('toast');
+    /* 先按持久化偏好落语言，避免首屏闪一下中文 */
+    ns.I18N.setLang(settings.uiLang);
     ns.ApiClient.setEndpoint({ baseUrl: settings.baseUrl, model: settings.model });
     syncSettingsToInputs();
     bindCommonSettings();
@@ -3175,7 +3870,7 @@ pre#preview{
     panelToggle('helpPanel', 'btnHelp');
     btn('btnSaveSettings').onclick = function () {
       var base = btn('setBaseUrl').value.trim();
-      if (!/^https?:\/\/[^\s]+$/i.test(base)) { toast('Base URL 需以 http:// 或 https:// 开头'); return; }
+      if (!/^https?:\/\/[^\s]+$/i.test(base)) { toastT('toast.badBase'); return; }
       settings.baseUrl = base;
       settings.model = btn('setModel').value.trim() || C.MODEL;
       var price = Number(btn('setPrice').value);
@@ -3184,8 +3879,8 @@ pre#preview{
       settings.bom = btn('setBom').checked;
       persist();
       bindCommonSettings();
-      btn('settingsHint').textContent = '已保存';
-      log('设置已更新（不含 Key）');
+      btn('settingsHint').textContent = T('set.saved');
+      logT('log.settingsSaved');
     };
     btn('btnResetSettings').onclick = function () {
       settings = ns.Config.resetSettings();
@@ -3193,7 +3888,7 @@ pre#preview{
       syncSettingsToInputs();
       bindCommonSettings();
       persist();
-      log('设置已恢复默认');
+      logT('log.settingsReset');
     };
 
     btn('btnKeySave').onclick = saveKey;
@@ -3236,7 +3931,20 @@ pre#preview{
     };
     btn('btnSave').onclick = saveMarkdown;
     btn('btnCopy').onclick = copyMarkdown;
-    btn('btnClearLog').onclick = function () { logEl.textContent = ''; };
+    btn('btnClearLog').onclick = clearLog;
+    btn('btnLang').onclick = function () {
+      settings.uiLang = ns.I18N.setLang(ns.I18N.getLang() === 'en' ? 'zh' : 'en');
+      // 语言偏好属非敏感设置：写入失败也不影响本次会话（方案 §6.1）
+      ns.Config.saveSettings(settings);
+    };
+    /* 切换语言后重绘全部动态区：表行、key 状态、日志、预览（applyStatic 由 setLang 负责） */
+    ns.I18N.onChange(function () {
+      btn('settingsHint').textContent = '';
+      syncKeyUI();
+      render();
+      paintLog();
+      if (!document.getElementById('previewPanel').hidden) { refreshPreview(); }
+    });
     btn('btnJsonClose').onclick = closeRaw;
     document.getElementById('jsonModal').addEventListener('click', function (e) {
       if (e.target === this) { closeRaw(); }
@@ -3251,7 +3959,7 @@ pre#preview{
 
     syncKeyUI();
     render();
-    log('就绪：请配置 API Key 后添加音频');
+    logT('log.ready');
   }
 
   ns.App = {
@@ -3266,7 +3974,10 @@ pre#preview{
     refreshPreview: refreshPreview,
     syncKeyUI: syncKeyUI,
     log: log,
+    logT: logT,
+    logParts: logParts,
     toast: toast,
+    toastT: toastT,
     buildMarkdown: buildMd
   };
 
@@ -3673,6 +4384,95 @@ pre#preview{
       }
     },
     {
+      id: '24', name: '切换语言 → 静态文案/状态/html lang 同步',
+      fn: function () {
+        ns.I18N.setLang('en');
+        eq(ns.I18N.getLang(), 'en', '语言未切换');
+        eq(document.documentElement.getAttribute('lang'), 'en', 'html lang');
+        eq(document.getElementById('btnStart').textContent, 'Start transcription', '按钮文案');
+        eq(ns.I18N.t('st.pending'), 'Queued', '状态文案');
+        eq(ns.I18N.t('key.mask', { tail: '3f9a', n: 52 }), 'Set ····3f9a (52 characters)', '掩码文案');
+        ns.I18N.setLang('zh');
+        eq(document.getElementById('btnStart').textContent, '开始转写', '切回中文');
+        eq(document.documentElement.getAttribute('lang'), 'zh-CN', 'html lang 回退');
+      }
+    },
+    {
+      id: '24b', name: '切换语言 → 日志按记录里的 key/函数重放',
+      fn: function () {
+        document.getElementById('btnClearLog').click();
+        /* 三类易被写死的片段：随语言变化的时长、错误文案、多段拼接 */
+        ns.App.logT('log.segReq', {
+          name: 'a.wav', i: 1, n: 1,
+          dur: function () { return ns.I18N.t('dur.s', { s: 4 }); }
+        });
+        ns.App.logT('log.fileErr', {
+          name: 'b.amr',
+          msg: function () { return ns.I18N.errText(ns.Util.err({ kind: 'unsupported', stage: 'analyze', msgKey: 'err.unsupported' })); }
+        }, 'warn');
+        ns.App.logParts([
+          { key: 'toast.added', vars: { n: 1 }, plural: 1 },
+          { key: 'toast.dup', vars: { n: 2 }, plural: 2 }
+        ]);
+        var pane = document.getElementById('log').textContent;
+        assert(pane.indexOf('4 秒') >= 0, '中文时长：' + pane);
+        assert(pane.indexOf('浏览器不支持该编码') >= 0, '中文错误：' + pane);
+        assert(pane.indexOf('已添加 1 个，重复 2 个已忽略') >= 0, '中文拼接：' + pane);
+        ns.I18N.setLang('en');
+        pane = document.getElementById('log').textContent;
+        assert(pane.indexOf('(4 s)') >= 0, '英文时长：' + pane);
+        assert(pane.indexOf('does not support this codec') >= 0, '英文错误：' + pane);
+        assert(pane.indexOf('Added 1 file, Ignored 2 duplicates') >= 0, '英文拼接：' + pane);
+        assert(pane.indexOf('已添加') < 0 && pane.indexOf('浏览器不支持') < 0 && pane.indexOf('秒') < 0, '英文日志残留中文：' + pane);
+        ns.I18N.setLang('zh');
+        document.getElementById('btnClearLog').click();
+      }
+    },
+    {
+      id: '25', name: 'uiLang 持久化字段与非法值回退',
+      fn: function () {
+        eq(ns.Config.pick({ uiLang: 'fr' }).uiLang, 'zh', '非法语言回落 zh');
+        eq(ns.Config.pick({ uiLang: 'en' }).uiLang, 'en', '合法语言保留');
+        var st = ns.Config.loadSettings().settings;
+        assert(st.uiLang === 'zh' || st.uiLang === 'en', 'uiLang 形状：' + st.uiLang);
+        return Promise.resolve();
+      }
+    },
+    {
+      id: '26', name: '英文导出：md 模板与自动命名跟随语言',
+      fn: function () {
+        ns.I18N.setLang('en');
+        var md = ns.Render.buildMarkdown([fixtureResult()], mdMeta());
+        eq(md.indexOf('# Speech Transcript'), 0, '英文标题');
+        assert(md.indexOf('- Generated: ') >= 0, 'Generated 缺失');
+        assert(md.indexOf('Status: Success') >= 0, 'Status 缺失');
+        assert(md.indexOf('语音转写记录') < 0 && md.indexOf('- 状态：') < 0, '英文 md 残留中文');
+        eq(ns.Render.pickName([{ name: 'meeting1.mp3' }], ''), 'meeting1_transcript.md', '单文件命名');
+        assert(/^Transcript_\d{8}_\d{6}\.md$/.test(ns.Render.pickName([{ name: 'a.wav' }, { name: 'b.wav' }], '')),
+          '多文件命名：' + ns.Render.pickName([{ name: 'a.wav' }, { name: 'b.wav' }], ''));
+        ns.I18N.setLang('zh');
+        eq(ns.Render.buildMarkdown([fixtureResult()], mdMeta()).indexOf('# 语音转写记录'), 0, '切回中文模板');
+        eq(ns.Render.pickName([{ name: 'meeting1.mp3' }], ''), 'meeting1_转写.md', '中文命名');
+      }
+    },
+    {
+      id: '27', name: '英文错误文案与 429 判定（依据 httpStatus）',
+      fn: function () {
+        ns.I18N.setLang('en');
+        resetRoute('always429');
+        return tx().then(function () { throw new Error('持续 429 未抛错'); }, function (e) {
+          eq(e.httpStatus, 429, 'httpStatus');
+          assert(/rate/i.test(e.message), '英文限流文案：' + e.message);
+          assert(e.message.indexOf('限流') < 0, '英文文案残留中文');
+          resetRoute('401');
+          return tx().then(function () { throw new Error('401 未抛错'); }, function (e2) {
+            eq(e2.httpStatus, 401, '401 httpStatus');
+            assert(/API Key/i.test(e2.message), '401 英文文案：' + e2.message);
+          });
+        });
+      }
+    },
+    {
       id: 'D1', name: '浏览器真解码：16k 单声道 PCM 时长一致',
       fn: function () {
         return ns.AudioEngine.decodeToMono16k(wavFile(3, '解码.wav')).then(function (dec) {
@@ -3753,6 +4553,7 @@ pre#preview{
     render(out, true);
     return tests.reduce(function (p, t) {
       return p.then(function () {
+        ns.I18N.setLang('zh');   // 每条用例前复位语言，前一条失败也不会污染后一条的中文断言
         return withTimeout(Promise.resolve().then(t.fn), 600000).then(function () {
           out.push({ id: t.id, name: t.name, status: 'pass', detail: '' });
         }, function (e) {
@@ -3771,6 +4572,8 @@ pre#preview{
     if (installed) { return; }
     installed = true;
     ns.ApiClient.setKey('FAKE_KEY_TEST_0000');
+    // 用例文案按中文断言，故固定 zh：持久化的 en 偏好不得影响 mock 轮结果
+    ns.I18N.setLang('zh');
     ns.ApiClient.setTransport(transport);
     ns.App.patchSettings({
       lang: 'auto', concurrency: 3, stream: false,
