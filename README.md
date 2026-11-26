@@ -6,6 +6,8 @@ A single-file web tool: open it in a browser by double-clicking, pick a few reco
 
 > The single source of truth for the spec and hard parameters is [`docs/方案.md`](docs/方案.md) (written in Chinese). This file only covers *how to use* the tool; every concrete value (audio format, size and duration thresholds, segment length, concurrency, retry and backoff) is defined in §4 of that document and is deliberately not repeated here.
 >
+> **Status: v2.5 — verified against the live API with a real key (2026-11-26).**
+>
 > The page UI is in Chinese only.
 
 ## 1. What it is
