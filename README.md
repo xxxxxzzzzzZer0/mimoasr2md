@@ -6,8 +6,6 @@ A single-file web tool: open it in a browser by double-clicking, pick a few reco
 
 > The single source of truth for the spec and hard parameters is [`docs/方案.md`](docs/方案.md) (written in Chinese). This file only covers *how to use* the tool; every concrete value (audio format, size and duration thresholds, segment length, concurrency, retry and backoff) is defined in §4 of that document and is deliberately not repeated here.
 >
-> **Status: v2.5. The offline self-test (`?mock=1`) passes; the real API and on-device scenarios are not yet verified.** Real error codes (401/402/421/429), the streaming frame format, usage fields, the system "Save As" dialog, long-running jobs and background throttling have all not been tested. Try it on a few short recordings before relying on it for real work.
->
 > The page UI is in Chinese only.
 
 ## 1. What it is
