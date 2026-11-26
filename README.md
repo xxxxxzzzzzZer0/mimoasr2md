@@ -4,9 +4,7 @@
 
 A single-file web tool: open it in a browser by double-clicking, pick a few recordings, turn them into text, and save the results merged into one Markdown document.
 
-> The single source of truth for the spec and hard parameters is [`docs/方案.md`](docs/方案.md) (written in Chinese). This file only covers *how to use* the tool; every concrete value (audio format, size and duration thresholds, segment length, concurrency, retry and backoff) is defined in §4 of that document and is deliberately not repeated here.
->
-> **Status: v2.6 — bilingual UI on top of v2.5; v2.5 was verified against the live API with a real key (2026-11-26). v2.6 adds only the interface language layer, whose own checks are listed in `docs/验收清单.md`.**
+> **Status: v2.6 — bilingual UI on top of v2.5; v2.5 was verified against the live API with a real key (2026-11-26). v2.6 adds only the interface language layer.**
 >
 > The page UI is bilingual (Chinese / English) and opens in Chinese; a button at the top right switches it.
 
@@ -72,7 +70,7 @@ The language button at the top right, and the switches at the bottom of the page
 |---|---|
 | Interface language | The button at the top right shows the target language (`EN` on the Chinese UI, `中文` on the English UI); switching is instant with no reload, the choice is remembered, and the first open is Chinese |
 | Language | Auto / Chinese / English, auto by default; an explicit language reduces misdetection |
-| Concurrency | Number of segment requests in flight; higher is faster but more likely to hit provider rate limits, lower is safer (see §4 of [`docs/方案.md`](docs/方案.md) for the range) |
+| Concurrency | Number of segment requests in flight; higher is faster but more likely to hit provider rate limits, lower is safer |
 | Silence-aware splitting | On by default: cut at silences to avoid chopping words in half; when off, cut at fixed-length boundaries |
 | Streaming (experimental) | Off by default; the provider publishes no official streaming sample for ASR, so enabling it concatenates increments and is experimental |
 | Protect original formatting | On by default; leading Markdown syntax in the transcript cannot break the document's sections |
@@ -88,7 +86,7 @@ The language button at the top right, and the switches at the bottom of the page
 
 Notes:
 
-- Splitting exists to get around the per-request size limit; it **does not reduce the total upload**. The audio format, segment length, size limit and duration threshold are in §4 of [`docs/方案.md`](docs/方案.md).
+- Splitting exists to get around the per-request size limit; it **does not reduce the total upload**.
 - Both a duration and a file-size threshold apply; files beyond them are rejected with a request to split them first. For very long recordings the UI shows a memory estimate — splitting beforehand is recommended.
 - No codecs need to be installed; convert AMR/WMA to mp3 or wav with another tool first.
 
@@ -117,7 +115,7 @@ Notes:
 | "Save md" downloads instead of showing a dialog | The browser does not support "Save As" (e.g. Firefox), so it fell back to a download; nothing is lost, and the content also stays in the preview area. |
 | The document contains "possibly incomplete" | A segment hit the model's output length ceiling and stayed truncated even after one automatic binary re-split. Split very long recordings into pieces and transcribe them separately. |
 | "No valid speech detected (likely silence or music)" | The segment returned empty text although the provider recorded a duration — usually silence or pure music. |
-| File rejected with a request to split | It exceeds the duration or size threshold (thresholds in §4 of [`docs/方案.md`](docs/方案.md)). Split it or transcribe it in parts. |
+| File rejected with a request to split | It exceeds the duration or size threshold. Split it or transcribe it in parts. |
 | Progress stalls or suddenly slows | The browser throttles tabs that are backgrounded, minimized, locked or asleep. Keep the page in the foreground and avoid sleeping. |
 | Cannot decode `.amr` / `.wma` | Not supported in this version; convert to mp3/wav first. Such files send no request and cost nothing. |
 | Costs incurred after cancelling | Requests that completed before the cancel are billed as usual; the document's cost line reflects actual usage. |
@@ -136,8 +134,7 @@ Single file, works offline: the page opens and performs local decoding and split
 
 - Offline self-test: open `mimoasr2md.html?mock=1` — the whole flow runs against the test stub embedded in the page and sends no network requests.
 - Integration testing: a local CORS mock on `127.0.0.1:8787` and a static server on `127.0.0.1:8788`; both ports are exclusive and shut down after use.
-- Real-device and mock acceptance are ticked off item by item in [`docs/验收清单.md`](docs/验收清单.md) (Chinese). The offline and mock test credential is always `FAKE_KEY_TEST_0000`; a real key belongs only in the page's input field and must never be written to any file, screenshot or report.
-- Single source of truth for the spec: [`docs/方案.md`](docs/方案.md). Changing any hard parameter means changing §4 of that document first, then the code, in the same commit.
+- Real-device and mock acceptance are ticked off item by item locally. The offline and mock test credential is always `FAKE_KEY_TEST_0000`; a real key belongs only in the page's input field and must never be written to any file, screenshot or report.
 
 ## 8. Repository contents and license
 
@@ -146,9 +143,7 @@ Single file, works offline: the page opens and performs local decoding and split
 | `mimoasr2md.html` | The only runtime deliverable — one file, double-click to use |
 | `README.md` | This English README (the default view) |
 | `README.zh-CN.md` | Chinese README |
-| `docs/方案.md` | Single source of truth for the spec and hard parameters (Chinese) |
-| `docs/验收清单.md` | Real-device / mock acceptance checklist (Chinese) |
 | `LICENSE` | MIT |
 
 - The repository contains no credentials; each user enters their own API key in their own browser, and it never leaves that page's memory.
-- The development log (known defects and test records) is kept locally only and is not published with the repository.
+- The spec, the acceptance checklist and the development log are kept locally only and are not published with the repository.
