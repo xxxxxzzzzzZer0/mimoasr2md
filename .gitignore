@@ -4,6 +4,10 @@
 /output/
 /raw/
 
+# 仅本地留存的文档与 agent 守则（有意不入库）
+/docs-local/
+/AGENTS.md
+
 # 本地密钥与环境变量（严禁入库）
 *.key
 .env
