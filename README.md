@@ -4,8 +4,6 @@
 
 A single-file web tool: open it in a browser by double-clicking, pick a few recordings, turn them into text, and save the results merged into one Markdown document.
 
-> **Status: v2.6 — bilingual UI on top of v2.5; v2.5 was verified against the live API with a real key (2026-11-26). v2.6 adds only the interface language layer.**
->
 > The page UI is bilingual (Chinese / English) and opens in Chinese; a button at the top right switches it.
 
 ## 1. What it is
@@ -15,7 +13,6 @@ A single-file web tool: open it in a browser by double-clicking, pick a few reco
 - **Merged export**: all results are merged in selection order into a single `.md` file, one section per recording, each with the file name, basic info and the transcript.
 - **Bilingual UI**: Chinese and English, Chinese on first open; the button at the top right switches instantly without reloading, and the choice is remembered by the browser.
 - **Recognition is done by the provider**: transcription calls Xiaomi MiMo's speech API (model `mimo-v2.5-asr`) with your own API key. **Your audio is uploaded to the provider**; apart from that the page sends data nowhere else.
-- **Explicitly out of scope**: speaker diarization, timestamps or per-sentence timing, a server or local proxy, offline/local recognition, UI languages other than Chinese and English, and automatic browser-language detection.
 
 ## 2. Quick start
 
