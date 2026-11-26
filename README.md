@@ -1,145 +1,151 @@
-# 音频转文字工具（mimoasr2md.html）
+# Audio → Text (mimoasr2md.html)
 
-一个单文件网页工具：双击用浏览器打开，选若干段录音，转成文字，最后合并保存为一个 Markdown 文档。
+**English** | [简体中文](README.zh-CN.md)
 
-> 规格与硬参数的唯一事实源是 [`docs/方案.md`](docs/方案.md)。本文件只讲"怎么用"，所有具体数值（采样格式、体积与时长门槛、切片长度、并发、重试与退避等）一律以该文档 §4 为准，本文件不复述。
+A single-file web tool: open it in a browser by double-clicking, pick a few recordings, turn them into text, and save the results merged into one Markdown document.
+
+> The single source of truth for the spec and hard parameters is [`docs/方案.md`](docs/方案.md) (written in Chinese). This file only covers *how to use* the tool; every concrete value (audio format, size and duration thresholds, segment length, concurrency, retry and backoff) is defined in §4 of that document and is deliberately not repeated here.
 >
-> **开发状态：v2.5。离线自测（`?mock=1`）已通过，真实接口与真机场景尚未验收。** 真实错误码（401/402/421/429）、流式帧格式、用量字段、系统「另存为」对话框、长时间任务与后台节流均未实测。建议先在少量短音频上试用，再用于正式材料。
+> **Status: v2.5. The offline self-test (`?mock=1`) passes; the real API and on-device scenarios are not yet verified.** Real error codes (401/402/421/429), the streaming frame format, usage fields, the system "Save As" dialog, long-running jobs and background throttling have all not been tested. Try it on a few short recordings before relying on it for real work.
+>
+> The page UI is in Chinese only.
 
-## 1. 这是什么
+## 1. What it is
 
-- **单文件 HTML**：`mimoasr2md.html` 一个文件就是全部程序，免安装、免构建、不联网加载任何资源，断网也能打开界面。
-- **一次处理多段音频**：多选文件、拖拽，或直接选择一个文件夹。
-- **合并导出**：所有结果按顺序合并进同一个 `.md` 文件，每个音频一节，含文件名、基本信息和正文。
-- **由服务商完成识别**：转写调用小米 MiMo 的语音识别接口（模型 `mimo-v2.5-asr`），使用你自己的 API Key。**音频会上传至服务商**，页面除此以外不向任何地址发送数据。
-- **明确不做**：说话人分离、时间戳与逐句时间轴、服务端或本地代理、离线本地识别、多语言界面。
+- **One HTML file**: `mimoasr2md.html` is the entire program — no install, no build step, and no resources loaded from the network, so the interface still works offline.
+- **Many recordings at once**: multi-select files, drag and drop, or pick a whole folder.
+- **Merged export**: all results are merged in selection order into a single `.md` file, one section per recording, each with the file name, basic info and the transcript.
+- **Recognition is done by the provider**: transcription calls Xiaomi MiMo's speech API (model `mimo-v2.5-asr`) with your own API key. **Your audio is uploaded to the provider**; apart from that the page sends data nowhere else.
+- **Explicitly out of scope**: speaker diarization, timestamps or per-sentence timing, a server or local proxy, offline/local recognition, and a multilingual UI.
 
-## 2. 快速开始
+## 2. Quick start
 
-### 2.1 打开页面
+### 2.1 Open the page
 
-下载 [`mimoasr2md.html`](mimoasr2md.html)（在 GitHub 上点开文件后右上角 Download raw file），存到本地任意目录，双击用浏览器打开（推荐 Edge / Chrome）。地址栏是 `file://` 开头属正常，页面不需要联网也能完整加载。
+Download [`mimoasr2md.html`](mimoasr2md.html) (on GitHub, open the file and use **Download raw file**), put it in any local folder, and double-click it (Edge / Chrome recommended). A `file://` URL in the address bar is expected; the page loads fully without a network connection.
 
-### 2.2 填 API Key
+### 2.2 Enter your API key
 
-1. 在页面「API Key」处粘贴你的 key（输入框为密码型，不会明文回显）。
-2. 粘贴时会自动去掉首尾空白、误带的 `Bearer ` 前缀和不可见字符；格式异常只会给出警告，最终以服务端判定为准。
-3. 确认后输入框变为只读掩码，形如「已配置 ····后 4 位（总长度）」。掩码不假设任何固定前缀，只显示后 4 位与字符数。
-4. 需要核对时可点「显示 3 秒」临时查看明文，到时自动回掩；页面不提供明文一键复制。
-5. **key 只存在于当前页面的内存里**：刷新、关闭标签页即失效，需要重新填写。
-6. 接口地址（Base URL）与模型名在「设置」里，默认已填好；这类非敏感设置会被记住，写入失败时退化为"本次有效"。
+1. Paste your key into the **API Key** field (the input is a password field and never echoes the value in clear text).
+2. Pasting strips leading/trailing whitespace, an accidentally included `Bearer ` prefix, and invisible characters. Format problems only produce a warning — the provider has the final say.
+3. Once confirmed, the field becomes a read-only mask such as "configured ····last 4 (total length)". The mask assumes no fixed prefix; it only shows the last 4 characters and the length.
+4. To double-check, "show for 3 seconds" temporarily reveals it, then re-masks automatically. There is no one-click "copy in clear" action.
+5. **The key lives only in this page's memory**: refreshing or closing the tab discards it and you have to enter it again.
+6. The endpoint (Base URL) and model name live under "Settings" and are prefilled. These non-sensitive settings are remembered; if storage fails, they simply apply to the current session only.
 
-### 2.3 选择音频
+### 2.3 Select audio
 
-- 拖入文件、点「选择文件」（可多选），或点「选择文件夹」。
-- 选文件夹时按扩展名过滤，非音频文件自动忽略；不会读取或上传未选中的内容。
-- 同一文件重复添加会按文件名、大小、修改时间去重，并给出提示。
-- 列表里每一行显示大小、时长、处理方式与状态，可单文件重试、查看该文件的原始响应 JSON（已脱敏）、移除。
+- Drag files in, click "choose files" (multi-select), or click "choose folder".
+- When picking a folder, files are filtered by extension and non-audio files are ignored; nothing outside your selection is read or uploaded.
+- Re-adding the same file is de-duplicated by file name, size and modification time, with a notice.
+- Each list row shows size, duration, processing method and status, and offers per-file retry, a look at that file's raw response JSON (redacted), and removal.
 
-### 2.4 开始转写
+### 2.4 Start transcription
 
-- key 未配置时「开始转写」按钮不可用。
-- 进度只在对应行内更新，不弹模态框；长任务建议让页面保持在前台（切到后台可能被浏览器节流，见 §5）。
-- 随时可以「取消」，已完成的结果会保留。
-- 单个音频内若某一段最终失败，该音频标记为「部分失败」并注明缺失段号；手动重试只重跑失败段。
+- Until a key is configured, the "start" button is disabled.
+- Progress updates in each row only; there is no modal dialog. For long jobs, keep the page in the foreground (a background tab may be throttled by the browser — see §5).
+- You can cancel at any time; finished results are kept.
+- If one segment of a file ultimately fails, that file is marked "partially failed" with the missing segment numbers; a manual retry re-runs only the failed segments.
 
-### 2.5 预览
+### 2.5 Preview
 
-点「预览」查看即将保存的全文：顶部是生成时间、模型、语种参数、文件数与成功/失败统计、音频总时长与预估费用；下面每个音频一节，含大小、时长、处理方式、状态、耗时与正文。**失败的文件也会出现在文档里并写明原因**。
+Click "preview" to see the exact text that will be saved: at the top, generation time, model, language setting, file count and success/failure counts, total audio duration and the estimated cost; below, one section per recording with size, duration, processing method, status, elapsed time and the transcript. **Failed files also appear in the document, with the reason stated.**
 
-### 2.6 保存 md
+### 2.6 Save the Markdown
 
-- 点「保存 md」：Edge / Chrome 会弹出系统「另存为」，可自选路径与文件名；若浏览器不支持该能力或调用被拒，自动改为下载到浏览器下载文件夹（Firefox 即走此路径）。
-- 输出文件名：在「输出文件名」框里自填，允许中文与空格（Windows 不允许的字符会被替换）；留空则自动命名：
-  - 单个音频 → `<原音频名>_转写.md`
-  - 多个音频 → `转写记录_YYYYMMDD_HHMMSS.md`（本地时间）
-- 合并顺序：**与选择顺序一致**，完成先后不影响文档里的先后。
-- 另外还有「复制」按钮，可把全文复制到剪贴板。
-- 文档选项（设置里）：「导出含元信息块」取消勾选后只保留标题、小节标题与正文（失败项仍保留一句原因）；「BOM」兼容旧版记事本；「保护原文格式」默认开启，避免正文里行首的 `---`、代码围栏等破坏章节结构。超长无换行的正文会按句读断行，只为可读性，不改动文字。
-- 保存被取消时页面不报错，内容仍在预览区，可再次保存或复制。
+- Click "save md": Edge / Chrome opens the system **Save As** dialog so you can choose the folder and file name. If the browser does not support it or the call is denied, it falls back to a download in the browser's download folder (Firefox always takes this path).
+- Output file name: type your own in the "output file name" field — Chinese characters and spaces are allowed (characters Windows forbids are replaced). Leave it empty for automatic naming:
+  - one recording → `<original audio name>_转写.md`
+  - several recordings → `转写记录_YYYYMMDD_HHMMSS.md` (local time)
+- Merge order matches **the order you selected the files**; completion order does not matter.
+- There is also a "copy" button that puts the whole document on the clipboard.
+- Document options (under Settings): clearing "include metadata block" keeps only the title, section headings and transcripts (failed items still keep a one-line reason); "BOM" helps very old Notepad; "protect original formatting" (on by default) stops leading `---`, code fences and similar Markdown from breaking the section structure. Very long lines without line breaks are wrapped at sentence boundaries for readability only — the text itself is unchanged.
+- Cancelling the save is not an error; the content stays in the preview area and can be saved or copied again.
 
-### 2.7 其它选项
+### 2.7 Other options
 
-页面底部与「设置」里的开关（非敏感项会被记住，写入失败时仅本次有效）：
+Switches at the bottom of the page and under "Settings" (non-sensitive ones are remembered; if storage fails they apply to the current session only):
 
-| 选项 | 说明 |
+| Option | Meaning |
 |---|---|
-| 语种 | 自动 / 中文 / 英文，缺省自动；语种明确时指定可减少误判 |
-| 并发 | 同时进行的段请求数；调高更快但更容易触发服务商限流，调低更稳（取值范围见 `docs/方案.md` §4） |
-| 静音切片 | 默认开启：在静音处下刀，尽量避免切断词句；关闭后按固定长度整点硬切 |
-| 流式（实验） | 默认关闭；服务商未公布正式的 ASR 流式样例，开启后按增量拼接，属实验特性 |
-| 保护原文格式 | 默认开启，正文行首的 Markdown 结构符号不会破坏文档章节 |
-| 导出含元信息块 / BOM | 见 §2.6 |
+| Language | Auto / Chinese / English, auto by default; an explicit language reduces misdetection |
+| Concurrency | Number of segment requests in flight; higher is faster but more likely to hit provider rate limits, lower is safer (see §4 of [`docs/方案.md`](docs/方案.md) for the range) |
+| Silence-aware splitting | On by default: cut at silences to avoid chopping words in half; when off, cut at fixed-length boundaries |
+| Streaming (experimental) | Off by default; the provider publishes no official streaming sample for ASR, so enabling it concatenates increments and is experimental |
+| Protect original formatting | On by default; leading Markdown syntax in the transcript cannot break the document's sections |
+| Include metadata block / BOM | See §2.6 |
 
-## 3. 支持的输入
+## 3. Supported inputs
 
-| 输入格式 | 处理方式 |
+| Input format | How it is handled |
 |---|---|
-| `wav` / `mp3` | 条件合适时原文件直接上传（保音质、少一次重编码）；超过单请求体积上限或时长较长时，自动转为接口要求的采样格式，并按需自动切片 |
-| `m4a` / `aac` / `ogg` / `flac` / `webm` | 浏览器解码 → 转为接口要求的采样格式 → 按需切片 |
-| `amr` / `wma` / `3gp` 及其他 | **本期不支持**：浏览器无法解码，页面直接提示「浏览器不支持，请先转为 mp3/wav」，**不发起请求、不计费** |
+| `wav` / `mp3` | Uploaded as-is when conditions allow (keeps audio quality, avoids a re-encode); when over the per-request size limit or long in duration, converted to the format the API requires and split as needed |
+| `m4a` / `aac` / `ogg` / `flac` / `webm` | Decoded in the browser → converted to the format the API requires → split as needed |
+| `amr` / `wma` / `3gp` and others | **Not supported in this version**: the browser cannot decode them, so the page says "not supported by the browser, convert to mp3/wav first" and **sends no request and bills nothing** |
 
-说明：
+Notes:
 
-- 切片是为了绕开单请求体积上限，**不减少总上传量**；具体采样格式、切片长度、体积上限、时长门槛见 `docs/方案.md` §4。
-- 存在时长与文件体积双重门槛，超过会被拒绝并提示先切分；很长的录音在界面上会出现内存估算提示，建议先切分再转写。
-- 不需要安装任何解码器；AMR/WMA 请先用其它工具转成 mp3 或 wav。
+- Splitting exists to get around the per-request size limit; it **does not reduce the total upload**. The audio format, segment length, size limit and duration threshold are in §4 of [`docs/方案.md`](docs/方案.md).
+- Both a duration and a file-size threshold apply; files beyond them are rejected with a request to split them first. For very long recordings the UI shows a memory estimate — splitting beforehand is recommended.
+- No codecs need to be installed; convert AMR/WMA to mp3 or wav with another tool first.
 
-## 4. 安全与隐私
+## 4. Security and privacy
 
-- **key 不落盘**：只存在页面内存中，用于构造请求头；不写 localStorage / sessionStorage / IndexedDB / Cookie，不进日志、预览区、导出的 md、原始 JSON 或任何文件；刷新即失效。
-- **日志与错误已脱敏**：界面日志、错误提示、预览文本中的 key 会被替换为 `[KEY]`，看到 `[KEY]` 属正常现象。
-- **无第三方请求**：页面没有任何 CDN、外链脚本/样式/字体/图标或统计代码；除设置里的接口地址外，不向其它地址发送请求。
-- **HTML 可安全转发**：文件本身不含 key 与任何凭证，转发给同事后每人填自己的 key 即可。
-- **风险提示**：
-  - 音频会上传至服务商进行识别，页面顶部常驻提示会显示实际使用的接口地址。
-  - 请在与服务商约定允许的范围内使用，并在受信设备上操作。
-  - 选择文件夹时，所选目录下的文件名对页面可见（页面只读、只上传你选中的音频）。
-  - 取消任务时，已经完成并计费的请求不会被撤销，费用按实际用量统计。
+- **The key never touches disk**: it exists only in page memory and is used to build the request header. It is not written to localStorage / sessionStorage / IndexedDB / cookies, and never appears in logs, the preview area, the exported Markdown, the raw JSON or any file. Refreshing discards it.
+- **Logs and errors are redacted**: the key is replaced with `[KEY]` in UI logs, error messages and preview text — seeing `[KEY]` is expected.
+- **No third-party requests**: there is no CDN, external script/style/font/icon or analytics, and no request goes anywhere except the endpoint configured under Settings.
+- **The HTML is safe to forward**: the file contains no key or other credential; each colleague simply enters their own key.
+- **Risks to be aware of**:
+  - Audio is uploaded to the provider for recognition; a persistent notice at the top of the page shows the endpoint actually in use.
+  - Use it within whatever terms you have agreed with the provider, and on a trusted device.
+  - When you pick a folder, the file names in that folder are visible to the page (it only reads and uploads the audio you selected).
+  - Cancelling does not undo requests that already completed and were billed; the cost line reflects actual usage.
 
-## 5. 常见问题
+## 5. Troubleshooting
 
-| 现象 | 原因与处理 |
+| Symptom | Cause and fix |
 |---|---|
-| 提示「API Key 无效」（401） | key 不完整或已失效。重新复制粘贴，确认没有多余空格；仍失败就到服务商控制台核对。 |
-| 提示「账户余额不足」（402） | 服务商账户余额不足，充值后重试。 |
-| 提示「服务端判定内容不可处理」（421） | 服务端内容拦截，换用其它录音或联系服务商。 |
-| 提示格式/大小不合法（400） | 页面已自动重切仍被拒绝，按提示查看服务端返回信息；可先把音频转成 wav/mp3 再试。 |
-| 提示限流（429） | 页面会自动退避重试；仍失败说明请求过于密集，稍后再试或把并发调低。 |
-| 地区/风控（403）、资源未找到（404）、服务端异常（500/503） | 地区或账号受限、接口地址/模型名填错、服务端临时故障；核对设置或稍后重试。 |
-| 点「保存 md」没弹窗，直接下载了 | 当前浏览器不支持「另存为」（如 Firefox），已降级为浏览器下载，功能不受影响；内容也始终留在预览区。 |
-| 文档里出现「可能不完整」 | 某段输出触发了模型输出长度上限，页面已自动二分重切一次仍截断。建议把超长录音先切成几段分别转写。 |
-| 提示「未识别到有效语音（疑似静音/纯音乐）」 | 该段识别结果为空但服务端记录了时长，通常是静音或纯音乐。 |
-| 文件被拒绝，提示先切分 | 超过时长或体积门槛（阈值见 `docs/方案.md` §4）。先切分或分段转写。 |
-| 进度长时间不动 / 突然变慢 | 页面切到后台、最小化、锁屏或休眠时，浏览器会节流页面。保持前台、避免休眠。 |
-| 无法解码 `.amr` / `.wma` | 本期不支持，先用其它工具转为 mp3/wav；此类文件不发起请求、不计费。 |
-| 取消后仍产生费用 | 取消前已完成的请求照常计费，文档费用行按实际用量统计。 |
+| "API key invalid" (401) | The key is incomplete or expired. Copy and paste it again and make sure there is no extra whitespace; if it still fails, check the provider console. |
+| "Insufficient balance" (402) | The provider account is out of credit; top up and retry. |
+| "Content rejected by the server" (421) | The provider blocked the content; try another recording or contact the provider. |
+| "Format/size not valid" (400) | The page already re-split automatically and was still rejected; check what the provider returned, or convert the audio to wav/mp3 first. |
+| Rate limited (429) | The page backs off and retries automatically; if it still fails, requests are too dense — wait and retry, or lower concurrency. |
+| Region/risk control (403), not found (404), server error (500/503) | Region or account restriction, a wrong endpoint or model name, or a temporary provider outage; check Settings or retry later. |
+| "Save md" downloads instead of showing a dialog | The browser does not support "Save As" (e.g. Firefox), so it fell back to a download; nothing is lost, and the content also stays in the preview area. |
+| The document contains "possibly incomplete" | A segment hit the model's output length ceiling and stayed truncated even after one automatic binary re-split. Split very long recordings into pieces and transcribe them separately. |
+| "No valid speech detected (likely silence or music)" | The segment returned empty text although the provider recorded a duration — usually silence or pure music. |
+| File rejected with a request to split | It exceeds the duration or size threshold (thresholds in §4 of [`docs/方案.md`](docs/方案.md)). Split it or transcribe it in parts. |
+| Progress stalls or suddenly slows | The browser throttles tabs that are backgrounded, minimized, locked or asleep. Keep the page in the foreground and avoid sleeping. |
+| Cannot decode `.amr` / `.wma` | Not supported in this version; convert to mp3/wav first. Such files send no request and cost nothing. |
+| Costs incurred after cancelling | Requests that completed before the cancel are billed as usual; the document's cost line reflects actual usage. |
 
-## 6. 浏览器支持
+## 6. Browser support
 
-| 浏览器 | 情况 |
+| Browser | Notes |
 |---|---|
-| Edge / Chrome（Windows） | 主路径，包含「另存为」自选路径 |
-| Firefox | 可用；保存降级为浏览器下载 |
-| Safari / 其它 | 未验证；保存走下载降级路径 |
+| Edge / Chrome (Windows) | Primary path, including "Save As" with a chosen location |
+| Firefox | Works; saving falls back to a browser download |
+| Safari / others | Untested; saving uses the download fallback |
 
-单文件、离线可用：断网也能打开页面并完成本地的解码、切片等操作，只有实际调用识别接口时需要网络。
+Single file, works offline: the page opens and performs local decoding and splitting without a network connection; only the actual recognition calls need one.
 
-## 7. 开发与自测
+## 7. Development and self-testing
 
-- 离线自测：打开 `mimoasr2md.html?mock=1`，全流程走页面内联的测试桩，不发送任何网络请求。
-- 联调：本地 CORS mock 用 `127.0.0.1:8787`，静态服务用 `127.0.0.1:8788`，端口独占、用完即停。
-- 真机验收与 mock 验收按 [`docs/验收清单.md`](docs/验收清单.md) 逐项打勾；离线与 mock 测试凭证统一使用 `FAKE_KEY_TEST_0000`，真机轮的真实 key 只允许在页面输入框内使用，禁止写入任何文件、截图或报告。
-- 规格唯一事实源：[`docs/方案.md`](docs/方案.md)。改动硬参数必须先改该文档 §4，再改代码，同一提交内完成。
+- Offline self-test: open `mimoasr2md.html?mock=1` — the whole flow runs against the test stub embedded in the page and sends no network requests.
+- Integration testing: a local CORS mock on `127.0.0.1:8787` and a static server on `127.0.0.1:8788`; both ports are exclusive and shut down after use.
+- Real-device and mock acceptance are ticked off item by item in [`docs/验收清单.md`](docs/验收清单.md) (Chinese). The offline and mock test credential is always `FAKE_KEY_TEST_0000`; a real key belongs only in the page's input field and must never be written to any file, screenshot or report.
+- Single source of truth for the spec: [`docs/方案.md`](docs/方案.md). Changing any hard parameter means changing §4 of that document first, then the code, in the same commit.
 
-## 8. 仓库内容与许可
+## 8. Repository contents and license
 
-| 路径 | 说明 |
+| Path | Contents |
 |---|---|
-| `mimoasr2md.html` | 唯一运行时交付物，单文件、双击即用 |
-| `docs/方案.md` | 规格与硬参数的唯一事实源 |
-| `docs/验收清单.md` | 真机轮 / mock 轮验收勾选表 |
+| `mimoasr2md.html` | The only runtime deliverable — one file, double-click to use |
+| `README.md` | This English README (the default view) |
+| `README.zh-CN.md` | Chinese README |
+| `docs/方案.md` | Single source of truth for the spec and hard parameters (Chinese) |
+| `docs/验收清单.md` | Real-device / mock acceptance checklist (Chinese) |
 | `LICENSE` | MIT |
 
-- 本仓库不含任何凭证；API Key 由使用者填在自己的浏览器里，不出页面内存。
-- 已知缺陷与实测记录的开发日志仅在本地维护，不随仓库发布。
+- The repository contains no credentials; each user enters their own API key in their own browser, and it never leaves that page's memory.
+- The development log (known defects and test records) is kept locally only and is not published with the repository.
